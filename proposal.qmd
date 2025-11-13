@@ -1,6 +1,6 @@
 ---
 title: "Project Proposal"
-author: "ALL group member names here"
+author: "Anvita, Matthewm Brynn, Pinaki"
 subtitle: "Due November 16 at 11:59pm"
 format: pdf
 editor: visual
@@ -14,17 +14,70 @@ library(tidyverse)
 
 # Dataset 1 (top choice)
 
-**Data source:**
+**Data source:** Current Population Survey (CPS) – Merged Outgoing Rotation Group (MORG) Earnings Microdata
+
+One of the dataset from the ‘[The National Bureau of Economic Research](https://www.nber.org/research/data?page=1&perPage=50)’
+
+**Source link:** [https://www.nber.org/research/data/current-population-survey-cps-merged-outgoing-rotation-group-earnings-data](https://www.nber.org/research/data/current-population-survey-cps-merged-outgoing-rotation-group-earnings-data?utm_source=chatgpt.com)
 
 **Brief description:**
 
-**Research question 1:**
+The CPS MORG dataset contains detailed monthly labor market microdata collected jointly by the U.S. Census Bureau and the Bureau of Labor Statistics. Each annual MORG file includes around **300,000+ individual-level observations**. Each row represents an adult respondent who was in the “outgoing rotation group” for that survey month.
+
+The dataset includes a rich mix of variables:
+
+-   **Demographics:** age, gender, race, education level, marital status
+
+-   **Geography:** state, region, metro status
+
+-   **Labor & earnings:** hourly wage, weekly earnings, hours worked, union membership, occupation, industry
+
+-   **Weights:** person-level and earnings weights
+
+For a class project, a clean subset can be created by selecting full-time employed adults (ages 25–64) and choosing 10–15 variables with a mix of numeric (e.g., wage, hours, age) and categorical (e.g., gender, education group, union status, industry).
+
+**Research Question 1**
+
+**Research question 1: How does union membership relate to hourly wages after accounting for education, experience (proxied by age), gender, and industry?**
 
 -   Outcome variable (include the name/description and type of variable):
+    -   **Hourly Wage**
+        -   **Type:** Numeric (continuous)
 
-**Research question 2:**
+        -   **Description:** Reported or computed hourly earnings for the respondent.
+-   Main predictor variable
+    -   **Union Membership (UNION)**
+        -   **Type:** Binary categorical
+
+        -   **Description:** Indicates whether the worker is a union member or covered by a union contract.
+-   Other potential predictors
+    -   **Education group (categorical)**
+    -   **Age (numeric)**
+    -   **Gender (categorical)**
+    -   **Industry (categorical)**
+    -   **Race (categorical)**
+    -   **Variable Type**
+-   **Numeric outcome**, categorical + numeric predictors.
+
+**Research question 2: Does the gender wage gap persist after controlling for age, education, occupation, industry, and hours worked?**
 
 -   Outcome variable (include the name/description and type of variable):
+    -   **Hourly Wage (continuous), same as above**
+-   Main predictor variable
+    -   **Gender (Male/Female)**
+        -   **Type:** Categorical
+
+        -   **Description:** Respondent’s self-reported gender.
+-   **Other potential predictors**
+    -   **Usual hours worked (numeric)**
+    -   **Education level (categorical)**
+    -   **Occupation group (categorical)**
+    -   **Industry (categorical)**
+    -   **Age (numeric)**
+    -   **Race/ethnicity (categorical)**
+-   **Interaction term idea**
+    -   **Gender × Occupation group**\
+        To test whether wage differences vary depending on the type of occupation (e.g., management vs. service work).
 
 **Load the data and provide a `glimpse()`**:
 
