@@ -1,6 +1,6 @@
 ---
 title: "Project Proposal"
-author: "Anvita, Matthewm Brynn, Pinaki"
+author: "Anvita, Matthew, Brynn, Pinaki"
 subtitle: "Due November 16 at 11:59pm"
 format: pdf
 editor: visual
