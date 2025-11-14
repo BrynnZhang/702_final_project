@@ -10,6 +10,7 @@ editor: visual
 
 ```{r load-packages, message = FALSE, warning = FALSE}
 library(tidyverse)
+library(dplyr)
 ```
 
 # Dataset 1 (top choice)
@@ -93,28 +94,40 @@ For a class project, a clean subset can be created by selecting full-time employ
 
 # Dataset 2
 
-**Data source:**
+**Data source:** United Nations Data, Gini index, CPIA policy and institutions for environmental sustainability rating (1=low to 6=high), Life expectancy at birth for both sexes combined (years), GDP per capita , PPP (current international \$)
 
-**Brief description:**
+**Brief description:** The UN collects data and a plethora of metrics for countries around the world. The Gini index is a measure of wealth distribution, with 0 representing perfect equality and 100 representing one person owning all wealth. The CPIA policy and institutions for environmental sustainability rating (1=low to 6=high) is a country's policies and institutional frameworks for environmental protection and sustainable resource management. Life expectancy at birth is how long a given person is expected to live at birth. GDP per capita is the Gross Domestic Product of a country divided by its population, a measure of economic output.
 
-**Research question 1:**
+**Research question 1:** How is life expectancy at birth related to Gini index controlling for GDP per capita.
 
--   Outcome variable (include the name/description and type of variable):
+-   Outcome variable (include the name/description and type of variable): Life expectancy at birth (years), continuous quantitative.
 
-**Research question 2:**
+**Research question 2:** How is the sustainability of a country's government related to Gini index controlling for GDP per capita.
 
--   Outcome variable (include the name/description and type of variable):
+-   Outcome variable (include the name/description and type of variable): CPIA policy and institutions for environmental sustainability rating (1=low to 6=high), discrete quantitative / ordinal categorical
 
 **Load the data and provide a `glimpse()`**:
 
 ```{r data-2, warning=FALSE}
-
+life_exp <- read.csv("UNLifeExp.csv")
+glimpse(life_exp)
+gdp_per_cap <- read.csv("UNGDP.csv")
+glimpse(gdp_per_cap)
+gini <- read.csv("UNGini.csv")
+glimpse(gini)
+sustainability <- read.csv("UNSust.csv")
+glimpse(sustainability)
 ```
 
 **Exploratory Plots:**
 
 ```{r plots-2}
-
+#Cut out regions and only include cuntries for each dataset
+#Cut out NAs
+#For life expectancy, look into why future years are included and cut out variant column
+#For GDP, cut out footnotes column
+#For Gini, cut out footnotes column
+#For Sustainability, cut out footnotes column and factor values to be [1, 2), [2, 3), etc.
 ```
 
 # 
