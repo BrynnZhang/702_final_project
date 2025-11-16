@@ -98,13 +98,15 @@ For a class project, a clean subset can be created by selecting full-time employ
 
 **Brief description:** The UN collects data and a plethora of metrics for countries around the world. The Gini index is a measure of wealth distribution, with 0 representing perfect equality and 100 representing one person owning all wealth. The CPIA policy and institutions for environmental sustainability rating (1=low to 6=high) is a country's policies and institutional frameworks for environmental protection and sustainable resource management. Life expectancy at birth is how long a given person is expected to live at birth. GDP per capita is the Gross Domestic Product of a country divided by its population, a measure of economic output.
 
-**Research question 1:** How is life expectancy at birth related to Gini index controlling for GDP per capita.
+**Research question 1:** How is life expectancy at birth related to Gini index controlling for GDP per capita?
 
 -   Outcome variable (include the name/description and type of variable): Life expectancy at birth (years), continuous quantitative.
+-   We could include an interaction term between Gini Index and Region. The effect of income inequality on life expectancy might differ by geographic region. For example, high inequality in Latin American countries might affect health outcomes differently than high inequality in Sub-Saharan African countries.
 
-**Research question 2:** How is the sustainability of a country's government related to Gini index controlling for GDP per capita.
+**Research question 2:** How is the sustainability of a country's government related to Gini index controlling for GDP per capita?
 
 -   Outcome variable (include the name/description and type of variable): CPIA policy and institutions for environmental sustainability rating (1=low to 6=high), discrete quantitative / ordinal categorical
+-   We could include an interaction term between Gini Index and Year. As global awareness of climate change has increased, countries with different inequality levels might respond differently to pressure for environmental policy reform over time. The effect of Gini index on sustainability in 2010 might be different than in 2020.
 
 **Load the data and provide a `glimpse()`**:
 
@@ -122,50 +124,117 @@ glimpse(sustainability)
 **Exploratory Plots:**
 
 ```{r plots-2}
-#Cut out regions and only include cuntries for each dataset
-#Cut out NAs
-#For life expectancy, look into why future years are included and cut out variant column
-#For GDP, cut out footnotes column
-#For Gini, cut out footnotes column
-#For Sustainability, cut out footnotes column and factor values to be [1, 2), [2, 3), etc.
+
+# Clean Life Expectancy data
+life_exp_clean <- life_exp |>
+  filter(
+    !str_detect(Country.or.Area, "region|Region|World|WORLD|income|Income|developed|Developed"),
+    Variant == "Medium",
+    Year.s. >= 1990 & Year.s. <= 2023
+  ) |>
+  select(Country = Country.or.Area, Year = Year.s., LifeExp = Value) |>
+  filter(!is.na(LifeExp))
+
+# Clean GDP per capita data
+gdp_clean <- gdp_per_cap |>
+  filter(!str_detect(Country.or.Area, "region|Region|World|WORLD|income|Income|developed|Developed")) |>
+  filter(str_detect(Year, "^\\d+$")) |>  # Keep only numeric years
+  mutate(Year = as.integer(Year)) |>
+  select(Country = Country.or.Area, Year, GDP = Value) |>
+  filter(!is.na(GDP))
+
+# Clean Gini index data
+gini_clean <- gini |>
+  filter(!str_detect(Country.or.Area, "region|Region|World|WORLD|income|Income|developed|Developed")) |>
+  filter(str_detect(Year, "^\\d+$")) |>  # Keep only numeric years
+  mutate(Year = as.integer(Year)) |>
+  select(Country = Country.or.Area, Year, Gini = Value) |>
+  filter(!is.na(Gini))
+
+# Clean Sustainability data
+sust_clean <- sustainability |>
+  filter(!str_detect(Country.or.Area, "region|Region|World|WORLD|income|Income|developed|Developed")) |>
+  select(Country = Country.or.Area, Year, Sustainability = Value) |>
+  filter(!is.na(Sustainability))
 ```
 
-# 
+```{r}
 
-# Dataset 3 (optional)
+# Merge datasets and use most recent year available for each country
+# Merge for Research Question 1 (Life Expectancy)
+rq1_data <- life_exp_clean |>
+  inner_join(gini_clean, by = c("Country", "Year")) |>
+  inner_join(gdp_clean, by = c("Country", "Year")) |>
+  group_by(Country) |>
+  slice_max(Year, n = 1) |>
+  ungroup()
 
-**Data source:**
-
-**Brief description:**
-
-**Research question 1:**
-
--   Outcome variable (include the name/description and type of variable):
-
-**Research question 2:**
-
--   Outcome variable (include the name/description and type of variable):
-
-**Load the data and provide a `glimpse()`**:
-
-```{r data-3, warning=FALSE}
-
+# Merge for Research Question 2 (Sustainability)
+rq2_data <- sust_clean |>
+  inner_join(gini_clean, by = c("Country", "Year")) |>
+  inner_join(gdp_clean, by = c("Country", "Year")) |>
+  group_by(Country) |>
+  slice_max(Year, n = 1) |>
+  ungroup()
 ```
 
-**Exploratory Plots:**
+```{r}
+# PLOT 1: Distribution of Life Expectancy (Outcome for RQ1)
+ggplot(rq1_data, aes(x = LifeExp)) +
+  geom_histogram(binwidth = 2, fill = "steelblue", color = "white") +
+  labs(
+    title = "Distribution of Life Expectancy at Birth",
+    x = "Life Expectancy (years)",
+    y = "Number of Countries"
+  ) +
+  theme_minimal()
 
-```{r plots-3}
-
+# PLOT 2: Life Expectancy vs Gini Index (Primary relationship for RQ1)
+ggplot(rq1_data, aes(x = Gini, y = LifeExp)) +
+  geom_point(alpha = 0.7, color = "steelblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  labs(
+    title = "Life Expectancy vs. Gini Index",
+    x = "Gini Index (0 = perfect equality, 100 = perfect inequality)",
+    y = "Life Expectancy at Birth (years)"
+  ) +
+  theme_minimal()
 ```
 
-# 
+```{r}
+# PLOT 3: Distribution of Sustainability Rating (Outcome for RQ2)
+ggplot(rq2_data, aes(x = Sustainability)) +
+  geom_histogram(binwidth = 0.5, fill = "forestgreen", color = "white") +
+  labs(
+    title = "Distribution of Environmental Sustainability Rating",
+    x = "CPIA Sustainability Rating (1 = low, 6 = high)",
+    y = "Number of Countries"
+  ) +
+  scale_x_continuous(breaks = 1:6) +
+  theme_minimal()
+
+# PLOT 4: Sustainability vs Gini Index (Primary relationship for RQ2)
+ggplot(rq2_data, aes(x = Gini, y = Sustainability)) +
+  geom_point(alpha = 0.7, color = "forestgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  labs(
+    title = "Environmental Sustainability Rating vs. Gini Index",
+    x = "Gini Index (0 = perfect equality, 100 = perfect inequality)",
+    y = "CPIA Sustainability Rating (1-6)"
+  ) +
+  theme_minimal()
+```
 
 # Team Charter
 
 #### When will you meet as a team to work on the project components? Will these meetings be held in person or virtually?
 
+We will aim to meet 4 times a week (3 times in person and once virtually) for an hour each. This will be to delegate any individual work, answer questions anyone may have, and to work together to analyze our results. We will add additional meetings as needed before the deadline.
+
 #### What is your group policy on missing team meetings (e.g., how much advance notice should be provided)?
+
+Team members should provide a 24 hour notice if they cannot attend a meeting and should just notify as soon as possibly if an emergency comes up. They should catch up with one member of the group to see what was missed and text in the group chat their update on their portion of the project.
 
 #### How will your team communicate (email, Slack, text messages)? What is your policy on appropriate response time (within a certain number of hours? Nights/weekends?)?
 
-#### 
+We have a Whatsapp message group chat where will communicate. Team members should always reply as soon as possible (within a few hours during the day).
