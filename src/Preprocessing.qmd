@@ -1,0 +1,148 @@
+---
+title: "Preprocessing for Dataset1: CPS MORG 2023"
+format: pdf
+editor: visual
+---
+
+## Preprocessing Steps
+
+This part of the code reads the raw CPS MORG 2023 file (`morg23.dta`),
+
+Applies all preprocessing and scoping rules, and saves a cleaned dataset that will be used in the proposal QMD.
+
+## Steps involved:
+
+1.  Read the complete file as downloaded from the source- morg23.dta (243484 obs of 98 varaiables)
+2.  Identifies the relevant columns that we want to take for the project
+3.  Subsets the data to keep only those columns
+4.  Filter & Transform the data basis the following conditions:
+    1.  South Atlantic States- filter
+    2.  Working Age Adults- filter
+    3.  Having positive hours and weekly earnings- filter
+    4.  Drops all self-employed and unpaid workers- filter
+    5.  Calculates hourly wages- transform
+    6.  Excludes outliers (where the hourly wage is less than 5 or more than 150)- outlier treatment
+    7.  Factor the following variables:
+        1.  Hourly wage- 1 if hourly wage \> 40 and 0 if it is less than 40
+        2.  Sex- 1 if Male and 0 if Female
+        3.  `educ` (from `grade92`) - Ex: 31- High School, 40- Some College
+        4.  race - Ex: 1- White, 2-Black
+        5.  unionme (Union Membership Flag)- 1- Member, 0- NonMember
+        6.  Full time or Part time status- ftpt94- Ex: 1-Full time, 2- Parttime, 3-Varying Hours
+        7.  Class of Worker (class94)
+        8.  Labor force status (lfsr94)
+    8.  Create a sample set of 5000 rows as the data post filtering was still 16000 rows
+    9.  Writing the data into the folder to be used for EDA and further project analysis
+
+Raw file lives at: `data/morg23.dta`
+
+Output files will be written to:\
+`data/cps23_southatlantic_project.rds`\
+`data/cps23_southatlantic_project.csv`
+
+```{r}
+library(haven)
+library(dplyr)
+library(ggplot2)
+```
+
+You can add options to executable code like this
+
+```{r}
+# 1. Loading raw NBER MORG data for 2023
+cps_raw <- read_dta("data/morg23.dta")
+
+# 2. Inspecting variable names
+names(cps_raw)
+
+# 3. Selecting specific variables for the project dataset
+cps_sel <- cps_raw %>%
+  select(
+    year,
+    intmonth,
+    stfips,      # state FIPS
+    age,
+    sex,
+    race,
+    grade92,
+    uhourse,     
+    earnwke,
+    class94,
+    unionmme,
+    lfsr94,
+    ftpt94,
+    earnwt,
+    weight
+  ) %>%
+  rename(
+    month = intmonth,
+    state = stfips,
+    hours = uhourse
+  )
+
+# 4.Applying filters --> South Atlantic FIPS states:
+# 10 DE, 11 DC, 12 FL, 13 GA, 24 MD, 37 NC, 45 SC, 51 VA, 54 WV
+
+cps23 <- cps_sel %>%
+  # working-age adults
+  filter(!is.na(age),
+         age >= 25, age <= 64) %>%
+  # positive hours and weekly earnings
+  filter(!is.na(hours), hours > 0,
+         !is.na(earnwke), earnwke > 0) %>%
+  # South Atlantic states only
+  filter(state %in% c(10, 11, 12, 13, 24, 37, 45, 51, 54)) %>%
+  # drop self-employed / unpaid (keep 1–4 = gov + private wage/salary)
+  filter(class94 %in% c(1, 2, 3, 4)) %>%
+  # hourly wage from weekly earnings / usual hours
+  mutate(
+    hrwage = as.numeric(earnwke) / as.numeric(hours)
+  ) %>%
+  # trim outliers
+  filter(!is.na(hrwage),
+         hrwage >= 5, hrwage <= 150) %>%
+  # derived vars + factors
+  mutate(
+    high_earner = if_else(hrwage >= 40, 1L, 0L),
+    sex  = factor(sex,  levels = c(1, 2),
+                  labels = c("Male", "Female")),
+    educ = factor(grade92),
+    race = factor(race),
+    unionmme = factor(unionmme),
+    ftpt94   = factor(ftpt94),
+    class94  = factor(class94),
+    lfsr94   = factor(lfsr94)
+  ) %>%
+  select(
+    year, month, state,
+    age, sex, race, educ,
+    hours, hrwage, high_earner,
+    earnwke,
+    unionmme, lfsr94, ftpt94, class94,
+    earnwt, weight
+  )
+
+# 5. Taking a sample of 5000 rows
+
+set.seed(702)
+
+if (nrow(cps23) > 5000) {
+  cps23_proj <- cps23 %>% slice_sample(n = 5000)
+} else {
+  cps23_proj <- cps23
+}
+
+nrow(cps23_proj)
+
+# 6 Writing the samples back for use in the Proposal QMD
+write.csv(
+  cps23_proj,
+  "data/cps23_southatlantic_project.csv",
+  row.names = FALSE
+)
+
+saveRDS(
+  cps23_proj,
+  "data/cps23_southatlantic_project.rds"
+)
+```

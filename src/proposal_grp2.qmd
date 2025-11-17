@@ -1,0 +1,363 @@
+---
+title: "Project Proposal- Group 2"
+author: "Anvita, Matthew, Brynn, Pinaki"
+subtitle: "Due November 16 at 11:59pm"
+format:
+  pdf:
+    include-in-header: |
+      \usepackage{microtype}
+      \setlength{\emergencystretch}{3em}
+execute:
+  output-width: 70
+editor: visual
+---
+
+#### Load Packages
+
+```{r load-packages, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(dplyr)
+library(haven)
+library(ggplot2)
+```
+
+# Dataset 1 (top choice)
+
+**Data source:** Current Population Survey (CPS) – Merged Outgoing Rotation Group (MORG) Earnings Microdata
+
+One of the dataset from the ‘[The National Bureau of Economic Research](https://www.nber.org/research/data?page=1&perPage=50)’
+
+**Source link:** [https://www.nber.org/research/data/current-population-survey-cps-merged-outgoing-rotation-group-earnings-data](https://www.nber.org/research/data/current-population-survey-cps-merged-outgoing-rotation-group-earnings-data?utm_source=chatgpt.com)
+
+Selected Dataset: morg23.dta (Data for 2023) from <https://data.nber.org/morg/annual/>
+
+**Brief description of the original data:**
+
+The CPS MORG (Current Population Survey – Merged Outgoing Rotation Group) dataset provides monthly U.S. labor-market microdata collected by the U.S. Census Bureau and the Bureau of Labor Statistics.
+
+Each annual file contains more than 300,000 individual records describing wages, hours, demographic characteristics, and work arrangements.
+
+Unit of Observation: Each row represents an adult in the outgoing- rotation group and includes the following types of variables:
+
+-   **Demographics:** age, gender, race, education level, marital status
+
+-   **Geography:** state, region, metro status
+
+-   **Labor & earnings:** hourly wage, weekly earnings, hours worked, union membership, occupation, industry
+
+-   **Weights:** person-level and earnings weights
+
+**Scoping for the project:**
+
+For this project, we have used a cleaned subset of the 2023 **CPS MORG** restricted to **South Atlantic states** (Delaware, DC, Florida, Georgia, Maryland, North Carolina, South Carolina, Virginia, West Virginia). This produces a regionally focused but sufficiently large dataset for inference. The steps involved in created the subset of data from the original dataset is captured in the section - **Preprocessing for Dataset1: CPS MORG 2023** at the end of the document.\
+
+**Research Question 1**
+
+**How is hourly wage associated with age among South Atlantic wage-and-salary workers, and does this association differ by education level?**
+
+-   Outcome variable :
+    -   **Hourly Wage (hrwage)**
+        -   **Type:** Numeric (continuous)
+
+        -   **Description:** Computed hourly earnings for the respondent
+-   Main predictor variable
+    -   **Age (age)**
+        -   **Type:** Continuous
+
+        -   **Interpretation:** A potential proxy for labour market experience and seniority
+-   Other potential predictors
+    -   **Usual Hours (continuous)**
+    -   **Gender (categorical)**
+    -   **Union membership (categorical)**
+    -   **Race (categorical)**
+    -   **Class of Worker (categorical)**
+-   **Numeric outcome**, categorical + numeric predictors.
+-   **Interaction Term that can be used** : **age \*education** - Tests whether the effect of age on wages differs across education levels
+-   Inference Focus - Assess whether age is associated with wages, and whether the wage-age relationship is different for workers with different education levels
+
+**Research question 2**
+
+**Are women less likely than men to be high earners (≥ \$40/hour), and does this gender difference vary by union membership status, after adjusting for age, education, race, hours worked, and occupation?**
+
+-   Outcome variable :
+    -   **high_earner(binary)- 1 if hourly wage \>= \$40, 0 otherwise**
+-   Main predictor variable
+    -   **Gender (Male/Female)**
+        -   **Type:** Categorical
+
+        -   **Description:** Respondent’s self-reported gender.
+-   **Other potential predictors**
+    -   **Usual hours worked (numeric)**
+    -   **Education level (categorical)**
+    -   **Union Membership (categorical)**
+    -   **Industry (categorical)**
+    -   **Age (numeric)**
+    -   **Race/ethnicity (categorical)**
+    -   **Class of worker (categorical)**
+-   **Interaction term idea**
+    -   **Gender × UnionMembership**\
+        Test whether the gender gap in probability of being a high earner is larger or smaller is different for members vs non-members
+-   Inference Focus - Whether the probability of being a high earner differs by gender and whether that changes depending on union membership
+
+**Load the data and provide a `glimpse()`**:
+
+```{r}
+# Read the cleaned project data
+cps <- readRDS("data/cps23_southatlantic_project.rds")
+```
+
+```         
+Interpretation of the distribution of hourly wages:
+Hourly wages in the South Atlantic region are right-skewed, with most workers earning between $15–$40 per hour and a small number earning substantially more
+```
+
+```         
+Interpretation of high-earners distribution:
+Most workers fall below the $40/hour threshold, with high earners making up a much smaller share of the sample.
+```
+
+```         
+```
+
+```         
+```
+
+```         
+```
+
+```         
+```
+
+```         
+```
+
+```{r}
+# Structure of the dataset
+glimpse(cps)
+
+# Basic summaries
+summary(select(cps, hrwage, age, hours, high_earner))
+
+# Categorical levels
+list(
+  sex_levels       = levels(cps$sex),
+  educ_levels      = levels(cps$educ),
+  race_levels      = levels(cps$race),
+  union_levels     = levels(cps$unionmme),
+  class94_levels   = levels(cps$class94)
+)    
+
+```
+
+```{r}
+ggplot(cps, aes(x = hrwage)) +
+  geom_histogram(bins = 40) +
+  labs(
+    title = "Distribution of hourly wages",
+    x = "Hourly wage (USD)",
+    y = "Count"
+  )
+
+```
+
+```{r}
+ggplot(cps, aes(x = factor(high_earner))) +
+  geom_bar() +
+  labs(
+    title = "Counts of high earners (≥ $40/hour)",
+    x = "High earner (0 = No, 1 = Yes)",
+    y = "Count"
+  )
+
+```
+
+**Exploratory Plots:**
+
+The following plots are analysed:
+
+1.  Hourly wage vs age (Overall)- Hourly wages tends to rise with age through early and mid career years and then level off or decline slightly
+2.  Hourly wage vs age by education level - Hourly wage tends to rise with age across all education groups and workers with higher education levels consistently earn more at every age
+3.  Hourly wage vs education level - Workers with higher education level consistently earn more, with both the median wage and spread of wages increasing
+
+```{r}
+ggplot(cps, aes(x = age, y = hrwage)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(
+    title = "Hourly wage vs age",
+    x = "Age (years)",
+    y = "Hourly wage (USD)"
+  )
+```
+
+```{r}
+ggplot(cps, aes(x = age, y = hrwage, colour = educ)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Hourly wage vs age by education level",
+    x = "Age (years)",
+    y = "Hourly wage (USD)",
+    colour = "Education"
+  )
+```
+
+```{r}
+ggplot(cps, aes(x = educ, y = hrwage)) +
+  geom_boxplot() +
+  coord_flip() +
+  labs(
+    title = "Hourly wage by education level",
+    x = "Education level",
+    y = "Hourly wage (USD)"
+  )
+
+
+```
+
+# Dataset 2
+
+**Data source:** United Nations Data, Gini index, CPIA policy and institutions for environmental sustainability rating (1=low to 6=high), Life expectancy at birth for both sexes combined (years), GDP per capita , PPP (current international \$)
+
+**Brief description:** The UN collects data and a plethora of metrics for countries around the world. The Gini index is a measure of wealth distribution, with 0 representing perfect equality and 100 representing one person owning all wealth. The CPIA policy and institutions for environmental sustainability rating (1=low to 6=high) is a country's policies and institutional frameworks for environmental protection and sustainable resource management. Life expectancy at birth is how long a given person is expected to live at birth. GDP per capita is the Gross Domestic Product of a country divided by its population, a measure of economic output.
+
+**Research question 1:** How is life expectancy at birth related to Gini index controlling for GDP per capita?
+
+-   Outcome variable (include the name/description and type of variable): Life expectancy at birth (years), continuous quantitative.
+-   We could include an interaction term between Gini Index and Region. The effect of income inequality on life expectancy might differ by geographic region. For example, high inequality in Latin American countries might affect health outcomes differently than high inequality in Sub-Saharan African countries.
+
+**Research question 2:** How is the sustainability of a country's government related to Gini index controlling for GDP per capita?
+
+-   Outcome variable (include the name/description and type of variable): CPIA policy and institutions for environmental sustainability rating (1=low to 6=high), discrete quantitative / ordinal categorical
+-   We could include an interaction term between Gini Index and Year. As global awareness of climate change has increased, countries with different inequality levels might respond differently to pressure for environmental policy reform over time. The effect of Gini index on sustainability in 2010 might be different than in 2020.
+
+**Load the data and provide a `glimpse()`**:
+
+```{r data-2, warning=FALSE}
+life_exp <- read.csv("data/UNLifeExp.csv")
+glimpse(life_exp)
+gdp_per_cap <- read.csv("data/UNGDP.csv")
+glimpse(gdp_per_cap)
+gini <- read.csv("data/UNGini.csv")
+glimpse(gini)
+sustainability <- read.csv("data/UNSust.csv")
+glimpse(sustainability)
+```
+
+**Exploratory Plots:**
+
+```{r plots-2}
+
+# Clean Life Expectancy data
+life_exp_clean <- life_exp |>
+  filter(
+    !str_detect(Country.or.Area, "region|Region|World|WORLD|income|Income|developed|Developed"),
+    Variant == "Medium",
+    Year.s. >= 1990 & Year.s. <= 2023
+  ) |>
+  select(Country = Country.or.Area, Year = Year.s., LifeExp = Value) |>
+  filter(!is.na(LifeExp))
+
+# Clean GDP per capita data
+gdp_clean <- gdp_per_cap |>
+  filter(!str_detect(Country.or.Area, "region|Region|World|WORLD|income|Income|developed|Developed")) |>
+  filter(str_detect(Year, "^\\d+$")) |>  # Keep only numeric years
+  mutate(Year = as.integer(Year)) |>
+  select(Country = Country.or.Area, Year, GDP = Value) |>
+  filter(!is.na(GDP))
+
+# Clean Gini index data
+gini_clean <- gini |>
+  filter(!str_detect(Country.or.Area, "region|Region|World|WORLD|income|Income|developed|Developed")) |>
+  filter(str_detect(Year, "^\\d+$")) |>  # Keep only numeric years
+  mutate(Year = as.integer(Year)) |>
+  select(Country = Country.or.Area, Year, Gini = Value) |>
+  filter(!is.na(Gini))
+
+# Clean Sustainability data
+sust_clean <- sustainability |>
+  filter(!str_detect(Country.or.Area, "region|Region|World|WORLD|income|Income|developed|Developed")) |>
+  select(Country = Country.or.Area, Year, Sustainability = Value) |>
+  filter(!is.na(Sustainability))
+```
+
+```{r}
+
+# Merge datasets and use most recent year available for each country
+# Merge for Research Question 1 (Life Expectancy)
+rq1_data <- life_exp_clean |>
+  inner_join(gini_clean, by = c("Country", "Year")) |>
+  inner_join(gdp_clean, by = c("Country", "Year")) |>
+  group_by(Country) |>
+  slice_max(Year, n = 1) |>
+  ungroup()
+
+# Merge for Research Question 2 (Sustainability)
+rq2_data <- sust_clean |>
+  inner_join(gini_clean, by = c("Country", "Year")) |>
+  inner_join(gdp_clean, by = c("Country", "Year")) |>
+  group_by(Country) |>
+  slice_max(Year, n = 1) |>
+  ungroup()
+```
+
+```{r}
+# PLOT 1: Distribution of Life Expectancy (Outcome for RQ1)
+ggplot(rq1_data, aes(x = LifeExp)) +
+  geom_histogram(binwidth = 2, fill = "steelblue", color = "white") +
+  labs(
+    title = "Distribution of Life Expectancy at Birth",
+    x = "Life Expectancy (years)",
+    y = "Number of Countries"
+  ) +
+  theme_minimal()
+
+# PLOT 2: Life Expectancy vs Gini Index (Primary relationship for RQ1)
+ggplot(rq1_data, aes(x = Gini, y = LifeExp)) +
+  geom_point(alpha = 0.7, color = "steelblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  labs(
+    title = "Life Expectancy vs. Gini Index",
+    x = "Gini Index (0 = perfect equality, 100 = perfect inequality)",
+    y = "Life Expectancy at Birth (years)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# PLOT 3: Distribution of Sustainability Rating (Outcome for RQ2)
+ggplot(rq2_data, aes(x = Sustainability)) +
+  geom_histogram(binwidth = 0.5, fill = "forestgreen", color = "white") +
+  labs(
+    title = "Distribution of Environmental Sustainability Rating",
+    x = "CPIA Sustainability Rating (1 = low, 6 = high)",
+    y = "Number of Countries"
+  ) +
+  scale_x_continuous(breaks = 1:6) +
+  theme_minimal()
+
+# PLOT 4: Sustainability vs Gini Index (Primary relationship for RQ2)
+ggplot(rq2_data, aes(x = Gini, y = Sustainability)) +
+  geom_point(alpha = 0.7, color = "forestgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") +
+  labs(
+    title = "Environmental Sustainability Rating vs. Gini Index",
+    x = "Gini Index (0 = perfect equality, 100 = perfect inequality)",
+    y = "CPIA Sustainability Rating (1-6)"
+  ) +
+  theme_minimal()
+```
+
+# Team Charter
+
+#### When will you meet as a team to work on the project components? Will these meetings be held in person or virtually?
+
+We will aim to meet 4 times a week (3 times in person and once virtually) for an hour each. This will be to delegate any individual work, answer questions anyone may have, and to work together to analyze our results. We will add additional meetings as needed before the deadline.
+
+#### What is your group policy on missing team meetings (e.g., how much advance notice should be provided)?
+
+Team members should provide a 24 hour notice if they cannot attend a meeting and should just notify as soon as possibly if an emergency comes up. They should catch up with one member of the group to see what was missed and text in the group chat their update on their portion of the project.
+
+#### How will your team communicate (email, Slack, text messages)? What is your policy on appropriate response time (within a certain number of hours? Nights/weekends?)?
+
+We have a Whatsapp message group chat where will communicate. Team members should always reply as soon as possible (within a few hours during the day).
