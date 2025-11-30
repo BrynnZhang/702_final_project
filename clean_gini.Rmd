@@ -21,11 +21,12 @@ library(stringr)
 gini_raw <- read.csv("data/UNGini.csv")
 ```
 
+
+## Clean
 ```{r}
-# Clean Gini Index data
 gini_clean <- gini_raw %>%
   
-  # 1. Remove non-country rows such as regions, world totals, and income groups
+  # 1. Remove non-country rows
   filter(
     !str_detect(
       Country.or.Area,
@@ -39,7 +40,7 @@ gini_clean <- gini_raw %>%
   # 3. Convert Year to integer
   mutate(Year = as.integer(Year)) %>%
   
-  # 4. Keep only the columns we actually need
+  # 4. Keep only the columns we actually need, i.e, drop value footnotes
   select(
     Country = Country.or.Area,
     Year,
