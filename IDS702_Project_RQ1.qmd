@@ -1,0 +1,418 @@
+---
+title: "IDS702_Project_RQ1"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+gini <- read_csv("D:/Ops/IDS702/Project_Proposal/data/UNGini_clean.csv")
+gdp_raw <- read_csv("D:/Ops/IDS702/Project_Proposal/data/UNGDP.csv")
+life_raw <- read_csv("D:/Ops/IDS702/Project_Proposal/data/UNLifeExp.csv")
+
+```
+
+You can add options to executable code like this
+
+```{r}
+intersect_countries <- intersect(gini$Country, gdp_raw$`Country or Area`)
+length(intersect_countries)
+
+setdiff(gini$Country, gdp_raw$`Country or Area`) %>% head(20)
+```
+
+```{r}
+gdp_clean <- gdp_raw %>%
+  # keep only the countries appearing in Gini dataset
+  filter(`Country or Area` %in% gini$Country) %>%
+  
+  # ensure Year is integer
+  mutate(Year = as.integer(Year)) %>%
+  
+  # rename columns
+  rename(
+    Country = `Country or Area`,
+    GDP = Value
+  ) %>%
+  
+  # select required columns
+  select(Country, Year, GDP) %>%
+  
+  # drop missing GDP values
+  filter(!is.na(GDP))
+
+```
+
+Validating the cleaned GDP file
+
+```{r}
+dim(gdp_clean)
+head(gdp_clean)
+```
+
+Cleaning Life Expectancy
+
+```{r}
+life_clean <- life_raw %>%
+  filter(
+    Variant == "Medium",
+    `Country or Area` %in% gini$Country,
+    `Year(s)` <= 2023
+  ) %>%
+  rename(
+    Country = `Country or Area`,
+    Year    = `Year(s)`,
+    LifeExp = Value
+  ) %>%
+  select(Country, Year, LifeExp) %>%
+  filter(!is.na(LifeExp))
+
+dim(life_clean)
+head(life_clean)
+
+```
+
+Merging all three for RQ1
+
+```{r}
+rq1_panel <- life_clean %>%
+  inner_join(gini,      by = c("Country", "Year")) %>%
+  inner_join(gdp_clean, by = c("Country", "Year"))
+
+dim(rq1_panel)
+head(rq1_panel)
+```
+
+We first constructed a country–year panel of life expectancy, Gini, and GDP per capita, then selected the latest year with at least 90% of the maximum country coverage (Year = 2018) to form a single cross-section for analysis.
+
+```{r}
+library(dplyr)
+
+# How many countries do we have for each year?
+year_counts <- rq1_panel %>%
+  count(Year, name = "n_countries") %>%
+  arrange(desc(Year))
+
+year_counts
+
+```
+
+```{r}
+max_n <- max(year_counts$n_countries)
+
+chosen_year <- year_counts %>%
+  # keep years that have at least 90% of the max number of countries
+  filter(n_countries >= 0.9 * max_n) %>%
+  arrange(desc(Year)) %>%
+  slice(1) %>%
+  pull(Year)
+
+chosen_year
+
+```
+
+Building the single year cross-section
+
+```{r}
+rq1_year <- rq1_panel %>%
+  filter(Year == chosen_year) %>%
+  mutate(log_GDP = log(GDP))
+
+dim(rq1_year)
+head(rq1_year)
+
+```
+
+We first merged UN data on life expectancy at birth, Gini index of income inequality and GDP per capita, PPP, to form a country–year panel for 2000–2023 (N = 1,721 country–year observations). Our primary analysis used ordinary least squares regression to relate the Gini index to life expectancy, controlling for log GDP per capita and calendar year:
+
+LifeExpct​=β0​+β1​Ginict​+β2​log(GDPct​)+γt​+εct​,
+
+where ccc indexes countries, ttt indexes years, and γt\gamma_tγt​ are year fixed effects that adjust for global time trends in life expectancy
+
+As a secondary analysis, we repeated the regression using only the most recent year with maximum country coverage (Year = 2018, N=81N = 81N=81 countries), fitting a cross-sectional model:
+
+LifeExpc​=α0​+α1​Ginic​+α2​log(GDPc​)+uc​
+
+Comparing the two specifications allows us to assess whether conclusions about the association between inequality and life expectancy are sensitive to using all available years versus a single recent cross-section.
+
+Model1- All country year observations with year fixed effects
+
+```{r}
+
+rq1_panel2 <- rq1_panel %>%
+  mutate(log_GDP = log(GDP))
+
+model_panel <- lm(
+  LifeExp ~ Gini + log_GDP + factor(Year),
+  data = rq1_panel2
+)
+summary(model_panel)
+
+```
+
+Plot for the model
+
+**Partial plot of Gini vs LifeExp, net of GDP and Year**
+
+This plot shows the relationship between inequality and life expectancy **after removing the effects of GDP per capita and year trends**.
+
+**What it shows:**
+
+-    The cloud of points is dense and centered horizontally around zero.
+
+-    The fitted line is almost flat but **slightly upward-sloping**.
+
+-    The slope matches the regression estimate (`β1 ≈ +0.08`): inequality is associated with *slightly* higher life expectancy when GDP and year are held constant.
+
+-    The association is **weak in magnitude**, even though statistically significant because the dataset is very large (≈1,700 rows).
+
+**Interpretation:**
+
+When comparing countries within the same year and at the same GDP level, the data show essentially no strong relationship between Gini and life expectancy. If anything, the line slopes slightly upward, indicating a small positive association.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# residualize LifeExp and Gini on log_GDP and Year
+panel_partial <- rq1_panel2 %>%
+  mutate(
+    resid_life = resid(lm(LifeExp ~ log_GDP + factor(Year), data = rq1_panel2)),
+    resid_gini = resid(lm(Gini     ~ log_GDP + factor(Year), data = rq1_panel2))
+  )
+
+ggplot(panel_partial, aes(x = resid_gini, y = resid_life)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "Gini (residualized on log GDP and year)",
+    y = "Life expectancy (residualized on log GDP and year)",
+    title = "Partial relationship between Gini and life expectancy\n(all country–year observations)"
+  )
+
+```
+
+**Simple scatter of LifeExp vs log_GDP (all years)**
+
+**What it shows:**
+
+-    A very strong, almost linear upward trend.
+
+-    Countries with higher GDP per capita almost always have higher life expectancy.
+
+-    This pattern persists regardless of year.
+
+**Interpretation:**
+
+Economic development (GDP per capita) is the single dominant factor explaining differences in life expectancy across countries and years. Inequality plays a comparatively minor role.
+
+```{r}
+ggplot(rq1_panel2, aes(x = log_GDP, y = LifeExp)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "log(GDP per capita, PPP)",
+    y = "Life expectancy at birth (years)",
+    title = "Life expectancy vs log GDP per capita (all country–years)"
+  )
+
+```
+
+Choose the single year for Model 2
+
+```{r}
+year_counts <- rq1_panel2 %>%
+  count(Year, name = "n_countries") %>%
+  arrange(desc(Year))
+
+year_counts 
+
+# choose the latest year with the maximum number of countries
+chosen_year <- year_counts %>%
+  filter(n_countries == max(n_countries)) %>%
+  arrange(desc(Year)) %>%
+  slice(1) %>%
+  pull(Year)
+
+chosen_year
+
+```
+
+Model 2
+
+```{r}
+rq1_year <- rq1_panel2 %>%
+  filter(Year == chosen_year)
+
+model_cross <- lm(
+  LifeExp ~ Gini + log_GDP,
+  data = rq1_year
+)
+summary(model_cross)
+
+```
+
+Plot for Model2
+
+For the single-year model
+
+###  **Life Expectancy vs Gini in 2018**
+
+**What it shows:**
+
+-    The scatter is noisier because the sample is smaller (≈80 countries).
+
+-    The fitted line is **downward-sloping**, not upward-sloping.
+
+-    This slope contradicts the positive point estimate from the regression output.
+
+**Why this mismatch?**\
+Because the **simple scatterplot ignores GDP**. When GDP is added back into the regression, the estimated effect of Gini becomes:
+
+-    small,
+
+-    positive,
+
+-    not statistically significant (p ≈ 0.12).
+
+    **Interpretation:**
+
+    In a raw scatterplot, higher inequality appears weakly associated with lower life expectancy, but this pattern disappears once we account for GDP per capita.
+
+**Life Expectancy vs log(GDP), single year**
+
+**What it shows:**
+
+-    Same story as in Model 1: strong upward linear trend.
+
+-    GDP explains a very large share of variation even in a single cross-section.
+
+**Interpretation**
+
+Even within one year, GDP dominates the relationship with life expectancy. Higher-income countries live longer.
+
+```{r}
+# Scatter: Life expectancy vs Gini, chosen year
+ggplot(rq1_year, aes(x = Gini, y = LifeExp)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "Gini index",
+    y = "Life expectancy at birth (years)",
+    title = paste0("Life expectancy vs Gini in ", unique(rq1_year$Year))
+  )
+
+# Scatter: Life expectancy vs log_GDP, chosen year
+ggplot(rq1_year, aes(x = log_GDP, y = LifeExp)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "log(GDP per capita, PPP)",
+    y = "Life expectancy at birth (years)",
+    title = paste0("Life expectancy vs log GDP per capita in ", unique(rq1_year$Year))
+  )
+
+```
+
+**Model Interpretations**
+
+**Model 1 (All country–years, year fixed effects)**
+
+-   Gini coefficient: small, positive, statistically significant.
+
+<!-- -->
+
+-    Effect size: a 10-point increase in Gini → ≈ **+0.8 years** life expectancy.
+
+<!-- -->
+
+-    GDP coefficient: large and strongly positive.
+
+<!-- -->
+
+-    Model fit: R² ≈ **0.77**.
+
+Over 2000–2023, after adjusting for GDP per capita and global time trends, countries with higher inequality have slightly higher life expectancy, although the effect is very small compared with the strong positive association between GDP and life expectancy.
+
+**Model 2 (Single Year, 2018)**
+
+Gini coefficient: small, positive, **not statistically significant**.
+
+Effect size: a 10-point increase in Gini → ≈ **+0.9 years**, but with large uncertainty.
+
+GDP coefficient: large and significant.
+
+Model fit: R² ≈ **0.85**.
+
+In 2018 alone, the estimated relationship between Gini and life expectancy is weak and statistically uncertain once GDP is controlled for. GDP per capita remains the main predictor of life expectancy levels across countries.
+
+**Comparison across models**
+
+The estimated effect of income inequality on life expectancy is very similar in magnitude across the two models (approximately 0.08–0.09 years per Gini point), but only statistically significant in the full panel. This difference arises entirely from sample size: the panel includes more than 1,700 country–year observations, providing enough precision to detect a small effect, whereas the single-year cross-section includes only 81 countries and produces a wide confidence interval.
+
+In both models, the substantive conclusion is the same: inequality has at most a small association with life expectancy once GDP per capita is accounted for. In contrast, the association between GDP per capita and life expectancy is large, strongly positive, and highly robust across both specifications.
+
+Overall, the results suggest that economic development, rather than income inequality, explains the majority of cross-country differences in life expectancy.
+
+**Statistical Interpretation:**
+
+We estimated two ordinary least squares regression models to assess the association between the Gini index of income inequality and life expectancy at birth, controlling for GDP per capita. The primary specification used the complete country–year panel (2000–2023; N ≈ 1,700), adjusting for global time trends with year fixed effects:
+
+LifeExpct​=β0​+β1​Ginict​+β2​log(GDPct​)+γt​+εct​.
+
+In this model, the estimated coefficient on the Gini index was positive and statistically significant (β₁ ≈ 0.08, p \< 0.001). Substantively, a 10-point increase in the Gini index was associated with approximately 0.8 additional years of life expectancy, conditional on GDP per capita and year. The coefficient on log GDP per capita was large and highly significant (β₂ ≈ 6.53, p \< 0.001), indicating that economic development is a major determinant of life expectancy. The model explained 77% of the variation in life expectancy (adjusted R² = 0.77).
+
+As a robustness check, we re-estimated the model using only the most recent year with maximum data coverage (2018; N = 81):
+
+LifeExpc​=α0​+α1​Ginic​+α2​log(GDPc​)+uc​.
+
+In this cross-sectional model, the estimated coefficient on the Gini index remained positive but was not statistically distinguishable from zero (α₁ ≈ 0.086, p = 0.12). The coefficient on log GDP per capita was again large and highly significant (α₂ ≈ 6.98, p \< 0.001). Model fit remained high (adjusted R² = 0.85), with GDP per capita accounting for most cross-country variance.
+
+Across both models, the estimated association between inequality and life expectancy was consistently small in magnitude and dwarfed by the much larger effect of GDP per capita. The sign of the inequality coefficient was positive in both specifications.
+
+# **Conclusion**
+
+Using comprehensive UN data on life expectancy, income inequality, and GDP per capita, we find **no evidence that higher income inequality is associated with lower life expectancy once economic development is taken into account**. Across nearly two decades of data, the estimated association between Gini and life expectancy is small, positive, and statistically detectable only in the full panel due to greater precision. In contrast, GDP per capita is a strong and robust predictor of life expectancy across all specifications.
+
+Taken together, these results indicate that **economic development, not income inequality, is the primary factor explaining cross-country differences in life expectancy in recent decades**. Inequality appears to play at most a modest secondary role once GDP per capita is controlled for.
+
+```{r}
+# Write all cleaned and analysis-ready datasets to CSV
+
+# 1. Cleaned Gini file (already provided by teammate)
+write.csv(gini,
+          file = "data/gini_clean.csv",
+          row.names = FALSE)
+
+# 2. Cleaned GDP file
+write.csv(gdp_clean,
+          file = "data/gdp_clean.csv",
+          row.names = FALSE)
+
+# 3. Cleaned Life Expectancy file
+write.csv(life_clean,
+          file = "data/lifeexp_clean.csv",
+          row.names = FALSE)
+
+# 4. Full merged country–year panel
+write.csv(rq1_panel,
+          file = "data/rq1_panel.csv",
+          row.names = FALSE)
+
+# 5. Analysis dataset for single-year cross-section
+write.csv(rq1_year,
+          file = "data/rq1_year.csv",
+          row.names = FALSE)
+
+```
