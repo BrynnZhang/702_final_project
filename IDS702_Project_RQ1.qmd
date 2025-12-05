@@ -1,16 +1,16 @@
 ---
 title: "IDS702_Project_RQ1"
-format: html
+format: docx
 editor: visual
 ---
 
-## Quarto
+## Data
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+The UN collects data and a plethora of metrics for countries around the world. The Gini index is a measure of wealth distribution, with 0 representing perfect equality and 100 representing one person owning all wealth. Life expectancy at birth is how long a given person is expected to live at birth. GDP per capita is the Gross Domestic Product of a country divided by its population, a measure of economic output.
 
-## Running Code
+## Research Question that we seek to Answer
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+How is Gini Index related to life expectancy at birth controlling for GDP per capital?
 
 ```{r}
 library(readr)
@@ -381,7 +381,7 @@ In this cross-sectional model, the estimated coefficient on the Gini index remai
 
 Across both models, the estimated association between inequality and life expectancy was consistently small in magnitude and dwarfed by the much larger effect of GDP per capita. The sign of the inequality coefficient was positive in both specifications.
 
-# **Conclusion**
+# **Conclusion from the model**
 
 Using comprehensive UN data on life expectancy, income inequality, and GDP per capita, we find **no evidence that higher income inequality is associated with lower life expectancy once economic development is taken into account**. Across nearly two decades of data, the estimated association between Gini and life expectancy is small, positive, and statistically detectable only in the full panel due to greater precision. In contrast, GDP per capita is a strong and robust predictor of life expectancy across all specifications.
 
@@ -416,3 +416,240 @@ write.csv(rq1_year,
           row.names = FALSE)
 
 ```
+
+**Adding interaction terms to the analysis.**
+
+To assess whether the association between income inequality, economic development, and life expectancy differs across parts of the world, we extended our main regression models to include **interaction terms between the key predictors (Gini index and log GDP per capita) and geographic region**. Because countries in different regions may experience distinct economic structures, health systems, demographic profiles, or policy environments, it could modify how inequality or income levels translate into population health outcomes.
+
+Formally, we estimated models of the form:
+
+LifeExpct​=β0​+β1​Ginict​+β2​log(GDPct​)+β3​Regionc​+β4​(Ginict​×Regionc​)+β5​(log(GDPct​)×Regionc​)+γt​+εct​,
+
+where the interaction terms allow the **slope of Gini** and the **slope of GDP per capita** to vary by region. This approach enables us to test whether the relationship between inequality or income and life expectancy is homogeneous across countries, or whether certain regions exhibit stronger or weaker associations.
+
+Including these interactions provides a structured way to evaluate potential **effect modification** and ensures that our conclusions about inequality, GDP per capita, and life expectancy are not driven by region-specific differences.
+
+```{r}
+library(countrycode)
+
+rq1_panel2 <- rq1_panel2 %>%
+  mutate(
+    Region = countrycode(sourcevar = Country,
+                         origin = "country.name",
+                         destination = "region")
+  )
+
+```
+
+Checks on the region assignment
+
+```{r}
+table(rq1_panel2$Region, useNA = "ifany")
+
+
+```
+
+Cleaning unassigned countries to regions
+
+```{r}
+rq1_panel2 <- rq1_panel2 %>%
+  mutate(
+    Region = case_when(
+      Country == "Micronesia" ~ "East Asia & Pacific",
+      TRUE ~ Region
+    )
+  )
+
+rq1_panel2 <- rq1_panel2 %>%
+  mutate(
+    Country = ifelse(Country == "TÃ¼rkiye", "Türkiye", Country)
+  )
+
+rq1_panel2 <- rq1_panel2 %>%
+  mutate(
+    Region = countrycode(sourcevar = Country,
+                         origin = "country.name",
+                         destination = "region")
+  )
+
+table(rq1_panel2$Region, useNA = "ifany")
+
+```
+
+Comparing the base model for overall dataset against the interaction term model
+
+```{r}
+library(dplyr)
+
+rq1_panel_analysis <- rq1_panel2 %>%
+  # keep only rows with complete data for all variables used in the models
+  filter(
+    !is.na(LifeExp),
+    !is.na(Gini),
+    !is.na(log_GDP),
+    !is.na(Region),
+    !is.na(Year)        # year FE requires non-missing Year
+  )
+
+
+```
+
+```{r}
+# base model (no interactions)
+model_panel_base <- lm(
+  LifeExp ~ Gini + log_GDP + factor(Year),
+  data = rq1_panel_analysis
+)
+
+# interaction model: both Gini and log_GDP allowed to vary by Region
+model_panel_int <- lm(
+  LifeExp ~ (Gini + log_GDP) * Region + factor(Year),
+  data = rq1_panel_analysis
+)
+
+summary(model_panel_int)
+
+# test whether interactions jointly improve fit
+anova(model_panel_base, model_panel_int)
+
+```
+
+**Interaction results (panel model with Regions)**
+
+Model:
+
+LifeExpct​=β0​+β1​Ginict​+β2​log(GDPct​)+β3​Regionc​+β4​Ginict​×Regionc​+β5​log(GDPct​)×Regionc​+γt​+εct​.
+
+Reference region is **East Asia & Pacific**.
+
+Note: ANOVA is used to evaluate whether the additional predictors provides a statistically meaningful improvement in model fit
+
+ANOVA tests whether **Model 2 reduces unexplained variance enough to justify the added complexity**
+
+**Does adding interactions matter at all?**
+
+The ANOVA comparing the base model and the interaction model is:
+
+-    Model 1 (no interactions): RSS = 24,194, df = 1,685
+
+-    Model 2 ((Gini + log_GDP) × Region): RSS = 13,977, df = 1,667
+
+-    F(18, 1667) = 67.7, p \< 2.2×10⁻¹⁶
+
+    So, there is very strong statistical evidence that allowing the slopes of Gini and log GDP to vary by region improves model fit. In other words, **the relationship between inequality, GDP, and life expectancy does differ by region**
+
+    The adjusted R² also jumps from about 0.77 (base model) to 0.87 in the interaction model.
+
+### Region-specific Gini effects (qualitative)
+
+Base (East Asia & Pacific, ref region):
+
+-    `Gini` = 0.1178 → about **+0.12 years** of life expectancy per 1-point increase in Gini\
+    → roughly **+1.2 years per 10-point increase**, conditional on GDP and year.
+
+-    Region differences (Gini interactions):
+
+-    Latin America & Caribbean: `Gini:RegionLAC` = −0.1201 (p = 0.035)\
+    → Gini slope ≈ 0.1178 − 0.1201 ≈ **0**\
+    → in LAC, inequality is essentially **uncorrelated** with life expectancy once GDP and year are controlled
+
+-    Sub-Saharan Africa: `Gini:RegionSSA` = −0.3641 (p ≈ 4.1×10⁻¹¹)\
+    → Gini slope ≈ 0.1178 − 0.3641 ≈ **−0.25**\
+    → a 10-point higher Gini is associated with ≈ **2.5 years lower life expectancy** in SSA, conditional on GDP and year.
+
+-    South Asia: `Gini:RegionSouth Asia` = +0.1579 (p = 0.19)\
+    → Gini slope ≈ 0.12 + 0.16 ≈ **+0.28**\
+    → about **+2.8 years per 10 Gini points**, but the interaction p-value is not strong; uncertainty is large.
+
+-    Other regions (Europe & Central Asia, North America, MENA) show smaller or less precisely estimated differences. The key qualitative pattern:
+
+-    In some regions (e.g., East Asia & Pacific, South Asia), higher Gini is weakly **positively** associated with life expectancy.
+
+-    In Latin America, the association is essentially **flat**.
+
+-    In Sub-Saharan Africa, higher Gini is **negatively** associated with life expectancy, and that difference from the baseline is very precisely estimated.
+
+-    So the **sign and strength of the Gini–life expectancy association vary by region**.
+
+### Region-specific GDP effects 
+
+Base (East Asia & Pacific):
+
+-    `log_GDP` = 4.61 → an e-fold (\~2.7×) increase in GDP per capita is associated with ≈ **+4.6 years** of life expectancy.
+
+-    Key interactions:
+
+-   MENA: `log_GDP:RegionMENA` = +2.07 (p ≈ 7.6×10⁻⁶)\
+    → GDP slope ≈ 4.61 + 2.07 ≈ **6.7**\
+    → GDP gains have a **stronger** association with life expectancy in MENA.
+
+-    South Asia: `log_GDP:RegionSouth Asia` = +1.56 (p ≈ 0.014)\
+    → GDP slope ≈ 4.61 + 1.56 ≈ **6.2**\
+    → again, stronger effect of income on life expectancy.
+
+-    Other regions have slopes in the 4–5 year range and interaction p-values that are not significant.
+
+Bottom line: **GDP per capita is strongly and positively associated with life expectancy in every region**, with the strength of the association somewhat larger in MENA and South Asia.
+
+**Consolidated interpretation from the Interaction Model**
+
+To examine whether the association between inequality, economic development and life expectancy varied across world regions, we extended our panel model to include interactions between the Gini index, log GDP per capita and region. Adding these interaction terms substantially improved model fit (likelihood ratio test comparing models with and without interactions: F(18, 1667) = 67.7, p \< 0.001; adjusted R² increased from ≈0.77 to ≈0.87), indicating meaningful regional heterogeneity. In the reference region (East Asia & Pacific), a 10-point increase in the Gini index was associated with about 1.2 additional years of life expectancy, conditional on GDP and year, whereas in Latin America the inequality–life expectancy slope was close to zero, and in Sub-Saharan Africa the same 10-point increase was associated with roughly 2.5 years lower life expectancy. The effect of log GDP per capita remained strongly positive in all regions, with somewhat larger slopes in the Middle East & North Africa and South Asia. Overall, these results suggest that the relationship between income inequality and life expectancy is **region-dependent and modest in magnitude**, while GDP per capita shows a consistently large and positive association with life expectancy across all regions.
+
+**Plotting the impact of regions on the association of Economic Inequality (Gini) and Economic Development(GDP) to life expectancy**
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+ggplot(rq1_panel_analysis, aes(x = Gini, y = LifeExp, color = Region)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Gini–Life Expectancy Relationship by Region",
+    x = "Gini Index",
+    y = "Life Expectancy (years)"
+  )
+
+```
+
+```{r}
+ggplot(rq1_panel_analysis, aes(x = log_GDP, y = LifeExp, color = Region)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "GDP–Life Expectancy Relationship by Region",
+    x = "log(GDP per capita, PPP)",
+    y = "Life expectancy at birth (years)"
+  )
+
+```
+
+The region-specific visualizations reinforce the heterogeneity detected in the interaction model.\
+The **Gini–life expectancy plot** shows that the slope of inequality differs substantially across world regions. In East Asia & Pacific and Europe & Central Asia, the fitted lines are nearly flat, indicating little meaningful association between inequality and life expectancy once broad regional context is accounted for. Latin America & Caribbean shows a slight negative relationship, while Sub-Saharan Africa exhibits a clearly negative slope, consistent with the regression result that its Gini × Region interaction term was large and statistically significant. These visual patterns align with the model estimates: although the global main-effect coefficient for Gini was small and positive, this masks the fact that **some regions experience a weakly positive or negligible association, while others—especially Sub-Saharan Africa—show a distinctly negative relationship between inequality and life expectancy**.\
+The figure therefore provides intuitive graphical evidence supporting the ANOVA result that allowing Gini’s slope to vary by region significantly improves model fit.
+
+The **GDP–life expectancy plot** shows a consistent and strong positive association between income levels and life expectancy in every region, paralleling the highly significant log(GDP) coefficient in the regression models. However, the slopes are not identical across regions: Middle East & North Africa and South Asia display visibly steeper lines, meaning that increases in GDP per capita are associated with larger gains in life expectancy in these regions. This visual pattern aligns with the significant log(GDP) × Region interaction terms in the regression output. In contrast, Sub-Saharan Africa and Latin America show comparatively flatter slopes, reflecting smaller increases in life expectancy for comparable increments in GDP. Together, the plot confirms that while **GDP per capita is a universally strong predictor of life expectancy, the strength of this relationship varies across regions**, again validating the statistical interaction results.
+
+Overall, the two plots visually substantiate the consolidated interpretation from the interaction model:
+
+1.   **Inequality does not have a uniform relationship with life expectancy across regions**—the direction and strength of its association differ meaningfully, with some regions showing flat or slightly positive slopes and others showing negative slopes.
+
+2.   **GDP per capita is the dominant driver of life expectancy differences**, but its influence is also **region-dependent**, being stronger in some regions than in others.
+
+3.   These visual patterns closely reflect the statistical evidence, strengthening the conclusion that **regional context substantially modifies how economic inequality and economic development translate into health outcomes**.
+
+# **Conclusion (Aligned to Research Question)**
+
+Our research question asked:\
+**How is income inequality (Gini index) related to life expectancy at birth after accounting for GDP per capita, and does this relationship differ across world regions?**
+
+Using UN data from 2000–2023, we found that **GDP per capita is the primary driver of life expectancy differences across countries**, with higher-income countries consistently living longer. In contrast, the relationship between inequality and life expectancy is **not uniform**. When looking at all countries together, inequality appears to have only a **small and inconsistent association** with life expectancy. However, when we allow this relationship to vary by region, clear differences emerge:
+
+-    In some regions, inequality has little or no association with life expectancy.
+
+-    In Sub-Saharan Africa, higher inequality is associated with **lower** life expectancy.
+
+-    In other regions, the association is weakly positive or close to zero.
+
+\
+**Economic development matters far more for improving life expectancy than income inequality alone**, and the influence of inequality depends heavily on regional context. This means that global “one-size-fits-all” interpretations of inequality and health can be misleading. Effective health or development policy should focus first on strengthening economic conditions and then consider how inequality interacts with local social, political and health system factors within each region.
