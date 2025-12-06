@@ -1,0 +1,329 @@
+---
+title: "RQ2_draft"
+author: "Brynn Zhang, Anvita Suresh, Matthew Fischer, Pinaki Ghosh"
+date: "2025-12-06"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Merge data(gdp, gini, sust)
+
+```{r}
+library(dplyr)
+
+# Load cleaned datasets
+gdp_clean <- read.csv("gdp_clean.csv")
+gini_clean <- read.csv("gini_clean.csv")
+sust_clean <- read.csv("UNSust_clean.csv")
+
+# Fix inconsistent column names
+sust_clean <- sust_clean %>%
+  rename(
+    Country = Country.or.Area,
+    Sustainability = Value
+  )
+
+
+# Merge sustainability + gini + gdp
+rq2_data <- sust_clean %>%
+  inner_join(gini_clean, by = c("Country", "Year")) %>%
+  inner_join(gdp_clean, by = c("Country", "Year")) %>%
+  group_by(Country) %>%
+  slice_max(Year, n = 1) %>%   # use each country's most recent common year
+  ungroup()
+
+# Preview merged dataset
+glimpse(rq2_data)
+
+# Optional — save merged dataset
+write.csv(rq2_data, "rq2_merged.csv", row.names = FALSE)
+
+
+```
+
+## Load data
+
+We begin our analysis by loading the merged dataset for Research Question 2. After merging sustainability ratings with Gini index and GDP per capita, we obtained a dataset of 74 countries, each measured in its most recent available year.
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+rq2_raw <- read_csv("rq2_merged.csv")
+
+dim(rq2_raw)
+head(rq2_raw)
+summary(rq2_raw)
+
+```
+
+### A summary of the raw RQ2 dataset, including the distribution of the key variables:
+
+- Sustainability ratings range from 2.0 to 4.0, with a median of 3.0–3.5, indicating that most countries fall in the lower-to-middle range of environmental institutional strength.
+
+- Gini index values range from 26.0 to 51.5, with a median near 36–37, showing substantial variation in income inequality across countries.
+
+- GDP per capita varies widely, from around $786 to more than $23,000, suggesting strong cross-country economic heterogeneity.
+
+- Available years range from 2005 to 2022, with a median year around 2018. Because countries report sustainability ratings in different years, our analysis will control for year effects.
+
+
+
+
+## Data Cleaning & Transformation
+
+After loading the merged dataset, we log-transformed GDP per capita to reduce the strong right-skew typical of economic variables. The cleaned analytical dataset contains 74 countries, each observed in its most recent available year.
+
+```{r}
+
+rq2_panel <- rq2_raw %>%
+  mutate(
+    log_GDP = log(GDP)   # log-transform GDP to reduce skewness
+  ) %>%
+  filter(
+    !is.na(Sustainability),
+    !is.na(Gini),
+    !is.na(GDP),
+    is.finite(log_GDP)
+  )
+
+dim(rq2_panel)
+summary(select(rq2_panel, Sustainability, Gini, GDP, log_GDP, Year))
+
+```
+### Key descriptive patterns from the cleaned data:
+
+- Sustainability ratings range from 2.0 to 4.0, with a median around 3.0–3.5, indicating that most countries have relatively weak to moderate environmental policy and institutional performance.
+
+- Gini index values span from 26.0 (low inequality) to 51.5 (high inequality), with a median around 36–37, showing meaningful variation in income inequality across countries.
+
+- GDP per capita ranges from approximately $786 to over $23,000, demonstrating substantial cross-country economic heterogeneity.
+The log transformation compresses this spread into a more symmetric distribution (log GDP median ≈ 8.43).
+
+- Years range from 2005 to 2022, with a median year of 2018. Because observations come from different years, the regression model will incorporate year fixed effects to account for temporal differences in sustainability ratings.
+
+
+## Regression model
+
+We estimate the following regression:
+
+$Sustainabilityi =β_0 +β_1Gini_i+β_2log(GDP_i)+γ_{Year}+ε_i $
+
+This model assesses whether income inequality is associated with environmental sustainability ratings, controlling for economic development (GDP per capita) and country reporting year.
+
+```{r}
+model_rq2_panel <- lm(
+  Sustainability ~ Gini + log_GDP + factor(Year),
+  data = rq2_panel
+)
+
+summary(model_rq2_panel)
+
+
+```
+From the above table, we can deduce that:
+
+### Higher inequality is associated with higher sustainability ratings
+***Coefficient on Gini = 0.0206, p = 0.0288***
+This means that a one-point increase in the Gini index is associated with a 0.02-point increase in the sustainability rating, after controlling for GDP and year.
+Although the effect size is small, it is statistically significant at the 5% level.
+
+### Wealthier countries have significantly stronger sustainability ratings
+***Coefficient on log_GDP = 0.272, p = 0.0038***
+This means that a 1-unit increase in log(GDP), roughly a 2.7× increase in actual GDP per capita, is associated with a 0.27-point increase in sustainability rating.
+This is a moderately large substantive effect, and the p-value indicates strong significance.
+
+### Year effects are mostly small and not significant
+Most year dummy coefficients lie between −0.3 and +0.3 and are far from statistical significance (p > 0.20), except for 2009:
+***Year 2009 coefficient = –1.06, p = 0.046***
+This reflects that 2009 is an unusually low outlier year which is likely due to a smaller set of countries reporting that year. Overall, year adjustment does not meaningfully change the Gini or GDP estimates, which indicates robustness.
+
+### Model fit is modest but meaningful
+***R² = 0.424, Adjusted R² = 0.249***
+This means that The model explains 42% of variation in sustainability ratings, but only 25% after adjusting for the number of predictors, though this is expected for cross-country institutional scores, which are noisy and influenced by many unmeasured factors.
+
+_________
+To conclude, after controlling for GDP and year, income inequality shows a small but statistically significant positive association with sustainability ratings. This suggests that more unequal countries in the dataset tend to report slightly higher sustainability performance. While this pattern does not necessarily imply causation, it indicates that inequality does not depress institutional environmental ratings in the way one might expect.
+
+Economic development, however, displays a stronger and more consistent relationship with sustainability: countries with higher GDP per capita have substantially higher CPIA sustainability ratings. This aligns with broader empirical evidence linking economic capacity to institutional strength.
+
+Year effects are generally not significant, suggesting that differences across reporting years do not drive the observed relationships between inequality, GDP, and sustainability.
+
+## Partial Residual Plot
+
+To visualize the association between inequality and sustainability net of confounding factors, we constructed a partial-residual plot. Both Sustainability and Gini were residualized on log(GDP) and reporting year, and the resulting adjusted variables were plotted against each other.
+
+```{r, echo=FALSE}
+panel_partial <- rq2_panel %>%
+  mutate(
+    resid_Sust = resid(lm(Sustainability ~ log_GDP + factor(Year), data = rq2_panel)),
+    resid_Gini = resid(lm(Gini ~ log_GDP + factor(Year), data = rq2_panel))
+  )
+
+ggplot(panel_partial, aes(x = resid_Gini, y = resid_Sust)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(
+    x = "Gini residualized on log GDP and Year",
+    y = "Sustainability residualized on log GDP and Year",
+    title = "Partial Relationship: Sustainability vs Inequality (net of GDP and Year)"
+  )
+
+```
+
+
+### Key findings from the plot:
+
+- The scatter is wide and fairly diffuse, indicating substantial variation in sustainability ratings that is not explained by inequality alone.
+
+- Despite the noise, the fitted regression line slopes upward, echoing the positive and statistically significant coefficient from the regression model.
+
+- Countries with higher inequality tend to have slightly higher residualized sustainability ratings even after controlling for GDP and year.
+
+- The relationship is weak in magnitude but consistent in direction with the estimated coefficient on Gini from the main model.
+
+_______________
+
+These mean that The partial-residual plot reinforces the regression finding that income inequality is positively associated with sustainability ratings, conditional on GDP and reporting year. While the association is small and the scatter shows considerable heterogeneity across countries, the upward slope indicates that inequality does not depress sustainability scores in this dataset.
+
+However, these results do not imply causation; instead, they show that when economic development and temporal differences are accounted for, countries with higher Gini indices tend to report slightly higher environmental policy and institutional performance.
+
+
+## Sustainability vs Gini
+```{r}
+ggplot(rq2_panel, aes(x = Gini, y = Sustainability)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(
+    x = "Gini index (0 = equality, 100 = inequality)",
+    y = "Sustainability rating (1–6)",
+    title = "Sustainability vs Inequality (raw bivariate relationship)"
+  )
+
+```
+### Key findings from the plot: 
+
+- The upward slope indicates that higher inequality is associated with slightly higher sustainability ratings in the raw data.
+
+- The overall spread of points is wide and noisy, suggesting that inequality alone explains very little of the variation in sustainability performance.
+
+- A large number of countries cluster at sustainability levels 3 or 3.5 regardless of inequality, indicating institutional ratings are fairly coarse.
+
+___________
+
+The bivariate association mirrors the sign of the regression coefficient: more unequal countries tend to report marginally higher sustainability scores. However, the weakness of the slope and the scatter in the plot show that this relationship is not strong when examined without controls. This justifies the use of the multivariate model to account for economic development and reporting year.
+
+## Sustainability vs log(GDP)
+```{r}
+ggplot(rq2_panel, aes(x = log_GDP, y = Sustainability)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(
+    x = "log(GDP per capita, PPP)",
+    y = "Sustainability rating (1–6)",
+    title = "Sustainability vs log(GDP) (raw bivariate relationship)"
+  )
+
+```
+
+### Key findings from the plot:
+
+- The trend line shows a stronger and more consistent positive slope than the Gini plot.
+
+- Countries with higher log(GDP) tend to cluster at sustainability ratings of 3.5–4, while lower-income countries typically score 3 or below.
+
+- The relationship appears more stable and less noisy than the inequality plot.
+
+__________________
+
+This bivariate pattern aligns closely with the regression result: wealthier countries tend to have stronger environmental policy and institutional performance. Economic capacity appears to play a more substantial role in shaping sustainability ratings than inequality does when each predictor is examined on its own.
+
+
+
+
+
+
+
+## Single year regression
+
+Similar to RQ1, we wanted to fit a single year regression model, expecting to see improvement in data prediction. For RQ2, this corresponds to 2019, with 12 countries reporting sustainability ratings.
+
+
+
+
+```{r}
+
+year_counts <- rq2_panel %>%
+  count(Year, name = "n_countries") %>%
+  arrange(desc(n_countries))
+
+year_counts
+
+```
+
+
+The model estimated is:
+
+$Sustainability_{i,2019} =β_0 +β_1 Gini_i +β_2log(GDP_i)+ε_i. $
+
+
+```{r}
+# Filter to the chosen year (2019)
+rq2_2019 <- rq2_panel %>%
+  filter(Year == 2019)
+
+# Fit the cross-sectional regression
+model_rq2_cross <- lm(
+  Sustainability ~ Gini + log_GDP,
+  data = rq2_2019
+)
+
+summary(model_rq2_cross)
+
+```
+
+From the table we can see that: 
+
+- Neither Gini nor log(GDP) is statistically significant in this single-year sample.
+  - Gini: estimate = 0.017, p = 0.258
+  - log(GDP): estimate = 0.217, p = 0.153
+- Both coefficients remain positive, matching their signs in Model 1.
+- The effect sizes are similar to the panel model, but standard errors are much larger due to the smaller sample.
+
+- The overall fit is low:
+  - R² = 0.23,
+  - Adjusted R² ≈ 0.06,
+  meaning the model explains little variation in sustainability ratings for this limited cross section.
+  
+  
+  ___________
+  
+The 2019-only regression suggests that while the direction of the relationships is consistent, showcasing by the higher inequality and higher GDP associated with slightly higher sustainability scores, the estimates are too imprecise to draw strong conclusions from a single year. The limited sample of 12 countries reduces statistical power, causing coefficients that were significant in the panel model to become non-significant here.
+
+
+Therefore, Model 2 does not overturn Model 1. Instead, it shows that with only one year of data, the relationships become statistically weak even though the qualitative patterns remain the same. This reinforces the importance of using the full panel structure for institutional indicators like sustainability.
+
+
+
+### Conclusion
+
+
+Across countries, sustainability ratings tend to be higher in wealthier nations and slightly higher in more unequal ones. The multivariate panel model shows that both income inequality and economic development are positively associated with environmental sustainability ratings after accounting for year differences. The effect of inequality is statistically significant but modest in size, whereas GDP demonstrates a stronger and more robust association.
+
+The partial residual analysis indicates that, net of GDP and year, the positive relationship between inequality and sustainability persists, though with considerable variability across countries. Simple bivariate plots confirm that GDP is a more substantial predictor of sustainability than inequality when each is examined independently.
+
+The single-year model for 2019, although directionally consistent with the panel results, suffers from limited sample size and produces imprecise estimates. As a result, the evidence supporting the role of inequality is clearer in the full dataset than in a single-year cross-section. Overall, economic development appears to be the key driver of sustainability ratings, while inequality shows a small but positive association that warrants cautious interpretation.
+
+
+  
+  
+  
+  
