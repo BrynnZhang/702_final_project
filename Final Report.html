@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>“Nice relevant title for the analysis”</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Final Report_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Final Report_files/libs/quarto-html/quarto.js"></script>
+<script src="Final Report_files/libs/quarto-html/popper.min.js"></script>
+<script src="Final Report_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Final Report_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Final Report_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Final Report_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Final Report_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Final Report_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Final Report_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">“Nice relevant title for the analysis”</h1>
+<p class="subtitle lead">“Group member names”</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="executive-summary" class="level1">
+<h1><strong>Executive Summary</strong></h1>
+<p><strong>Stakeholder: A policy analyst at an international development agency (e.g., the World Bank or UNDP) who advises regional directors on where to prioritize funding and policy support to improve both population health and environmental sustainability in low- and middle-income countries.</strong></p>
+<p>In this project we use harmonized international data to understand how income inequality relates to two outcomes that matter for global development: population health and environmental sustainability. For our first research question, we analyze 1,721 country-year observations from 2000–2023 and fit regression models with region-specific effects to study how income inequality (Gini index) and economic development (log GDP per capita) are associated with life expectancy at birth across seven World Bank regions. For our second research question, we focus on 269 country-year observations from 74 low- and lower-middle-income countries between 2005–2022 and fit an ordinal logistic regression model to test whether income inequality is linked to the World Bank’s CPIA environmental sustainability rating after accounting for log GDP per capita and year. Our goal is not to prove causality, but to give a regional policy advisor a clear view of when inequality seems to move with worse outcomes, and when other factors appear to dominate.</p>
+<p>Across countries and years, we find that higher GDP per capita is consistently and strongly associated with longer life expectancy in every region, while the relationship between income inequality and life expectancy is weaker and highly region-dependent. In most regions, once we control for GDP, inequality has only a small or statistically uncertain association with life expectancy; Sub-Saharan Africa is the main exception, where higher inequality is clearly linked with shorter lives. For environmental sustainability, we see a different pattern. In our ordinal logistic model for CPIA environmental sustainability ratings, both higher log GDP per capita and higher income inequality are associated with better sustainability scores, with GDP showing the larger and more robust effect. This positive association between inequality and sustainability runs counter to our initial expectations and likely reflects structural differences and unmeasured factors in the IDA-eligible countries covered by the CPIA. Taken together, our results suggest that policies aimed at raising income levels are most reliably linked to gains in life expectancy, while inequality may matter in specific regional contexts for health and does not provide a simple, standalone signal for environmental sustainability performance in low- and lower-middle-income countries.</p>
+</section>
+<section id="problem-motivation" class="level1">
+<h1><strong>1.</strong> Problem Motivation</h1>
+<p>Over the last few decades, global life expectancy has gone up, but there are still big gaps between and within regions. Life expectancy at birth is a common summary of population health because it rolls up mortality at different ages into one number that is easy to compare across countries. At the same time, global policy agendas like the UN Sustainable Development Goals make it clear that health outcomes are linked to broader issues such as income, inequality, and environmental sustainability. For a development agency deciding where to focus limited resources, it is not enough to know that some countries are doing better than others. They need to understand which factors are most strongly associated with better outcomes.</p>
+<p>Income inequality is often discussed as one of those factors. Some researchers argue that more unequal societies tend to have worse health and social outcomes, even when average income is high. Others are more cautious and suggest that the relationship between inequality and health depends a lot on context and stage of development. In parallel, institutions like the World Bank track how strong a country’s policies and institutions are for protecting the environment, because these scores affect access to concessional finance and long term sustainability planning.</p>
+<p>In this project, we use harmonized international data from UNdata and World Bank sources to link these pieces together. First, we look at how income inequality (measured by the Gini index) and economic development (GDP per capita) are associated with life expectancy across countries, and whether these patterns differ by region. Second, we test whether income inequality is related to countries’ environmental sustainability performance, as measured by the CPIA environmental sustainability rating, after controlling for GDP per capita. Together, these two analyses are designed to help an international development agency judge whether inequality is a meaningful signal for where they might see joint benefits in both population health and environmental sustainability.</p>
+</section>
+<section id="results" class="level1">
+<h1><strong>2. Results</strong></h1>
+<section id="life-expectancy-results" class="level2">
+<h2 class="anchored" data-anchor-id="life-expectancy-results"><strong>2.1</strong> Life expectancy results</h2>
+<section id="descriptive-patterns-gdp-inequality-and-life-expectancy" class="level3">
+<h3 class="anchored" data-anchor-id="descriptive-patterns-gdp-inequality-and-life-expectancy">2.1.1 Descriptive patterns: GDP, inequality, and life expectancy</h3>
+<p>Across all regions, countries with higher GDP per capita tend to have longer life expectancy. Figure 1 plots life expectancy against log(GDP per capita), with separate trend lines by region. The positive relationship is clear in every region, though the slope differs somewhat. In practical terms, moving from very low to middle levels of GDP per capita is associated with several additional years of expected life at birth. This confirms that economic development is a central correlate of population health in our data.</p>
+<p>By contrast, the raw relationship between income inequality and life expectancy is weaker and more mixed. Figure 2 shows life expectancy against the Gini index, again with separate regional trend lines. In many regions, the fitted lines are relatively flat or only slightly sloped, indicating that higher inequality is not systematically associated with higher or lower life expectancy on its own. This suggests that inequality is not a simple standalone predictor of population health once we look across diverse regional contexts.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="regression-results-global-effects-of-gdp-and-inequality" class="level3">
+<h3 class="anchored" data-anchor-id="regression-results-global-effects-of-gdp-and-inequality"><strong>2.1.2 Regression results: global effects of GDP and inequality</strong></h3>
+<p>To move beyond these descriptive patterns, we fit a linear regression model with life expectancy as the outcome and the Gini index, log(GDP per capita), region indicators, and year fixed effects as predictors. This model uses the full panel of 1,721 country–year observations and controls for broad regional differences and global time trends.</p>
+<p>The model(Table 1) confirms that economic development is strongly and positively associated with life expectancy. Holding inequality, region, and year constant, higher log(GDP per capita) is associated with longer life expectancy, and the confidence interval for this effect is well above zero. In contrast, the global coefficient on the Gini index is much smaller in magnitude and closer to zero, indicating that, on average across regions and years, inequality is only weakly related to life expectancy once income is taken into account.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Table 1. Estimated effects of income inequality and economic development on life expectancy (year and region adjusted).</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: right;">Coefficient</th>
+<th style="text-align: right;">Lower</th>
+<th style="text-align: right;">Upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Gini index</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(per 10 points)</td>
+<td style="text-align: right;">-0.32</td>
+<td style="text-align: right;">-0.61</td>
+<td style="text-align: right;">-0.03</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">log(GDP)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(per unit)</td>
+<td style="text-align: right;">4.67</td>
+<td style="text-align: right;">4.45</td>
+<td style="text-align: right;">4.90</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure 3 summarizes these regression estimates. The bar for log(GDP) sits well above zero with a relatively narrow confidence interval, indicating a robust positive effect. The bar for the Gini index is closer to zero and its interval overlaps values that are small in practice, which is consistent with the idea that inequality is not a strong global driver of life expectancy when income and time are controlled.</p>
+</section>
+<section id="regional-differences-and-robustness" class="level3">
+<h3 class="anchored" data-anchor-id="regional-differences-and-robustness">2.1.3 Regional differences and robustness</h3>
+<p>Although the global effect of inequality is weak, our region-specific analysis shows that this masks important heterogeneity. When we allow the Gini–life expectancy relationship to vary by region (see technical appendix), Sub-Saharan Africa emerges as the main exception. In this region, higher inequality is clearly associated with lower life expectancy even after controlling for GDP per capita and year. In other regions, the inequality slope is much closer to zero and often statistically indistinguishable from no effect.</p>
+<p>We checked whether these results depend on a small number of influential country–year observations. Standard diagnostic plots indicate some influential points, which is common in cross-country data, but re-estimating the models after excluding them does not materially change the main conclusions. The strong positive association between economic development and life expectancy persists, and the pattern that inequality matters more in Sub-Saharan Africa than elsewhere remains. This gives us more confidence that the findings are not driven by a few extreme cases.</p>
+</section>
+</section>
+<section id="sustainability-results" class="level2">
+<h2 class="anchored" data-anchor-id="sustainability-results"><strong>2.2</strong> Sustainability results<strong>:</strong></h2>
+<section id="descriptive-patterns-inequality-gdp-and-sustainability-ratings" class="level3">
+<h3 class="anchored" data-anchor-id="descriptive-patterns-inequality-gdp-and-sustainability-ratings">2.2.1 Descriptive patterns: inequality, GDP, and sustainability ratings</h3>
+<p>We then focus on 269 country–year observations from low- and lower-middle-income countries with CPIA environmental sustainability ratings. Figure 4 shows simple bivariate relationships between the sustainability rating and our two main predictors. The left panel plots sustainability against the Gini index and shows a gentle upward slope: countries with higher inequality tend to have slightly higher sustainability ratings on average, although points are widely scattered. The right panel plots sustainability against log(GDP per capita) and shows a clearer upward trend, with higher-income countries more likely to have higher sustainability ratings.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-8-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure 5 looks at the same relationships by sustainability category. The Gini boxplots show that median inequality increases slightly from lower to higher sustainability categories, but there is substantial overlap in the distributions. In other words, countries with similar sustainability ratings can have quite different levels of inequality. In contrast, the log(GDP) boxplots show a clearer separation across categories, with higher-rated countries consistently having higher median GDP per capita. This suggests that economic development is a stronger differentiator of sustainability performance than inequality.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="ordinal-logistic-regression-results" class="level3">
+<h3 class="anchored" data-anchor-id="ordinal-logistic-regression-results">2.2.2 Ordinal logistic regression results</h3>
+<p>To formally test how inequality and income relate to sustainability ratings, we fit an ordinal logistic regression (proportional odds model) with the ordered sustainability rating as the outcome and Gini, log(GDP per capita), and year fixed effects as predictors. This model respects the ordered nature of the CPIA score and controls for common shocks and possible changes in rating practices over time.</p>
+<p>The regression results(Table 2) show that both inequality and GDP are positively associated with higher sustainability ratings, holding year constant. The estimated log-odds coefficient for the Gini index is about 0.074, which corresponds to an odds ratio of about 1.08 per one-point increase in the Gini index. Substantively, a 10-point increase in inequality (for example, from 30 to 40) is associated with roughly a doubling of the odds of being in a higher sustainability category. For log(GDP), the estimated coefficient is about 0.84, corresponding to an odds ratio of about 2.3. A one-unit increase in log(GDP)—roughly a 2.7× increase in GDP per capita—is therefore associated with more than double the odds of being in a higher sustainability category. Both effects are highly statistically significant.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Table 2. Ordinal logistic regression odds ratios for inequality and economic development on sustainability ratings (controlling for year).</caption>
+<colgroup>
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">conf.low</th>
+<th style="text-align: right;">conf.high</th>
+<th style="text-align: left;">coef.type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Gini</td>
+<td style="text-align: right;">1.076</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">4.624</td>
+<td style="text-align: right;">1.044</td>
+<td style="text-align: right;">1.111</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">log_GDP</td>
+<td style="text-align: right;">2.319</td>
+<td style="text-align: right;">0.183</td>
+<td style="text-align: right;">4.598</td>
+<td style="text-align: right;">1.625</td>
+<td style="text-align: right;">3.334</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2006</td>
+<td style="text-align: right;">1.037</td>
+<td style="text-align: right;">0.602</td>
+<td style="text-align: right;">0.060</td>
+<td style="text-align: right;">0.317</td>
+<td style="text-align: right;">3.388</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2007</td>
+<td style="text-align: right;">0.988</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">-0.021</td>
+<td style="text-align: right;">0.316</td>
+<td style="text-align: right;">3.108</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2008</td>
+<td style="text-align: right;">0.907</td>
+<td style="text-align: right;">0.649</td>
+<td style="text-align: right;">-0.151</td>
+<td style="text-align: right;">0.253</td>
+<td style="text-align: right;">3.251</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2009</td>
+<td style="text-align: right;">1.111</td>
+<td style="text-align: right;">0.587</td>
+<td style="text-align: right;">0.179</td>
+<td style="text-align: right;">0.350</td>
+<td style="text-align: right;">3.521</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2010</td>
+<td style="text-align: right;">1.128</td>
+<td style="text-align: right;">0.553</td>
+<td style="text-align: right;">0.217</td>
+<td style="text-align: right;">0.381</td>
+<td style="text-align: right;">3.351</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2011</td>
+<td style="text-align: right;">0.609</td>
+<td style="text-align: right;">0.575</td>
+<td style="text-align: right;">-0.861</td>
+<td style="text-align: right;">0.197</td>
+<td style="text-align: right;">1.889</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2012</td>
+<td style="text-align: right;">0.952</td>
+<td style="text-align: right;">0.589</td>
+<td style="text-align: right;">-0.083</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">3.035</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2013</td>
+<td style="text-align: right;">0.658</td>
+<td style="text-align: right;">0.659</td>
+<td style="text-align: right;">-0.635</td>
+<td style="text-align: right;">0.180</td>
+<td style="text-align: right;">2.410</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2014</td>
+<td style="text-align: right;">1.072</td>
+<td style="text-align: right;">0.620</td>
+<td style="text-align: right;">0.112</td>
+<td style="text-align: right;">0.317</td>
+<td style="text-align: right;">3.632</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2015</td>
+<td style="text-align: right;">1.151</td>
+<td style="text-align: right;">0.587</td>
+<td style="text-align: right;">0.240</td>
+<td style="text-align: right;">0.364</td>
+<td style="text-align: right;">3.651</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2016</td>
+<td style="text-align: right;">2.257</td>
+<td style="text-align: right;">0.670</td>
+<td style="text-align: right;">1.215</td>
+<td style="text-align: right;">0.608</td>
+<td style="text-align: right;">8.495</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2017</td>
+<td style="text-align: right;">0.999</td>
+<td style="text-align: right;">0.819</td>
+<td style="text-align: right;">-0.001</td>
+<td style="text-align: right;">0.201</td>
+<td style="text-align: right;">5.047</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2018</td>
+<td style="text-align: right;">2.154</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">1.319</td>
+<td style="text-align: right;">0.690</td>
+<td style="text-align: right;">6.794</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2019</td>
+<td style="text-align: right;">2.551</td>
+<td style="text-align: right;">0.638</td>
+<td style="text-align: right;">1.469</td>
+<td style="text-align: right;">0.733</td>
+<td style="text-align: right;">9.014</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2020</td>
+<td style="text-align: right;">3.584</td>
+<td style="text-align: right;">0.861</td>
+<td style="text-align: right;">1.482</td>
+<td style="text-align: right;">0.656</td>
+<td style="text-align: right;">19.903</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2021</td>
+<td style="text-align: right;">1.869</td>
+<td style="text-align: right;">0.688</td>
+<td style="text-align: right;">0.909</td>
+<td style="text-align: right;">0.487</td>
+<td style="text-align: right;">7.289</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2022</td>
+<td style="text-align: right;">1.200</td>
+<td style="text-align: right;">0.805</td>
+<td style="text-align: right;">0.226</td>
+<td style="text-align: right;">0.247</td>
+<td style="text-align: right;">5.936</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure 6 compares the coefficients for Gini and log(GDP) on the log-odds scale. Both bars are clearly above zero, but the bar for log(GDP) is taller, reflecting its stronger association with sustainability ratings. This supports the idea that among low- and lower-middle-income countries, economic development is a more powerful predictor of environmental institutional strength than income distribution, even though inequality also has a positive association.</p>
+<p>Year fixed effects are generally small and imprecise, and the likelihood ratio test shows that including Gini, log(GDP), and year jointly improves model fit over a model with only intercepts. McFadden’s pseudo-R² is modest (around 0.06), which is typical for institutional rating data and reflects the fact that sustainability outcomes depend on many unobserved country-specific factors. For our purposes, the key point is that the estimated associations for Gini and GDP are statistically robust and directionally clear.</p>
+</section>
+<section id="counterintuitive-inequality-effect" class="level3">
+<h3 class="anchored" data-anchor-id="counterintuitive-inequality-effect">2.2.3 Counterintuitive inequality effect</h3>
+<p>The positive sign on the Gini coefficient is counterintuitive, because we might expect more unequal societies to have weaker environmental institutions. Several explanations are possible. First, CPIA ratings are only available for IDA-eligible (low and lower-middle-income) countries. Within this restricted group, countries with somewhat higher inequality may also have more diversified economies, larger urban centers, or stronger statistical systems, all of which can support environmental policy frameworks. Second, inequality and sustainability may both be driven by deeper structural factors, such as governance capacity, that we do not observe. Third, because CPIA scores are based on expert judgment, they may emphasize formal policy frameworks and institutional arrangements rather than distributional outcomes.</p>
+<p>Whatever the mechanism, the practical takeaway is that inequality alone is not a reliable screening signal for environmental sustainability performance in this set of countries. GDP per capita is more strongly and consistently associated with higher sustainability ratings, and the positive inequality effect should be interpreted with caution and explored further in future work rather than treated as evidence that higher inequality is desirable.</p>
+</section>
+</section>
+<section id="integrated-implications" class="level2">
+<h2 class="anchored" data-anchor-id="integrated-implications">2.3 Integrated implications</h2>
+<p>Looking across the two research questions, we see a consistent pattern in how economic development and inequality relate to our outcomes. For life expectancy, log(GDP per capita) is the dominant predictor: richer countries have longer life expectancy in every region, and this relationship remains strong after we control for year and region fixed effects. Inequality, in contrast, plays a secondary role. Its global effect is small and imprecise, and only in Sub-Saharan Africa do we see a clear negative association between higher inequality and shorter lives. This suggests that inequality can matter for health, but its impact is context dependent and interacts with broader structural conditions.</p>
+<p>For environmental sustainability, both inequality and GDP per capita are positively associated with higher CPIA sustainability ratings, but GDP again has the stronger effect. The positive inequality coefficient is surprising and likely reflects sample restrictions, measurement issues, and unobserved confounders rather than a simple causal relationship. In practice, sustainability ratings appear to track a country’s overall institutional and economic capacity more than its income distribution.</p>
+<p>For a regional policy advisor, these findings point to a few practical implications. First, investments that raise income levels—through growth, productivity, and basic infrastructure—are the most reliable levers for improving life expectancy across regions and for supporting stronger environmental institutions in low- and lower-middle-income countries. Second, inequality is not a universal signal of poor outcomes. It deserves special attention in places like Sub-Saharan Africa, where it appears more tightly connected to health, but it should not be used in isolation as a proxy for environmental sustainability performance. Finally, because both outcomes are influenced by many unobserved factors, it will be important to combine this kind of cross-country statistical evidence with country-specific knowledge when prioritizing interventions and evaluating progress.</p>
+</section>
+</section>
+<section id="methodology" class="level1">
+<h1><strong>3. Methodology</strong></h1>
+<p>Our analysis uses regression models as descriptive tools to understand how income inequality and economic development relate to life expectancy and environmental sustainability. In each case we control for other factors such as year and region so that we can interpret the coefficients as associations <strong>holding those factors constant</strong>, not as causal effects.</p>
+<section id="models-for-life-expectancy" class="level2">
+<h2 class="anchored" data-anchor-id="models-for-life-expectancy">3.1 Models for life expectancy</h2>
+<p>To study life expectancy at birth (measured in years), we fit linear regression models. In these models, life expectancy is explained by the Gini index (income inequality), log GDP per capita (PPP), region, and year.</p>
+<p>The basic idea is simple. The coefficient on log GDP per capita tells us how many years of additional life expectancy are associated with a one unit increase in log GDP, holding inequality, region, and year fixed. Because log GDP is on a log scale, this roughly corresponds to a 2.7 times increase in income. In practical terms, this coefficient answers: <em>“If two countries are similar in inequality and observed year but one is richer, how much longer do people in the richer country tend to live?”</em></p>
+<p>The coefficient on the Gini index tells us how life expectancy changes when inequality rises, after controlling for GDP, region, and year. In the results we rescale this coefficient to a 10 point increase in the Gini index so it has a more intuitive interpretation, for example: <em>“A 10 point increase in inequality is associated with about X years difference in life expectancy, holding other factors constant.”</em></p>
+<p>Because relationships may differ across regions, we also estimate a version of the model that allows the Gini effect and the GDP effect to vary by region. In that specification each region has its own slope for inequality. These region specific coefficients let us say things like: <em>“Within Sub-Saharan Africa, higher inequality is associated with lower life expectancy even after we adjust for GDP and year, while in many other regions the inequality slope is close to zero.”</em></p>
+</section>
+<section id="models-for-sustainability-ratings" class="level2">
+<h2 class="anchored" data-anchor-id="models-for-sustainability-ratings">3.2 Models for sustainability ratings</h2>
+<p>For environmental sustainability, the outcome is the CPIA environmental sustainability rating. This is an ordered score rather than a continuous variable, so we use an <strong>ordinal logistic regression</strong> (proportional odds model) instead of a linear model.</p>
+<p>In this model, the predictors are the Gini index, log GDP per capita, and year. The model estimates how these predictors change the <strong>log odds</strong> that a country receives a higher sustainability rating rather than a lower one, holding the other variables fixed.</p>
+<p>The Gini coefficient in this model can be interpreted through its odds ratio. When we exponentiate the coefficient, we obtain a number greater than 1. For example, an odds ratio of about 1.08 means that a one point increase in the Gini index is associated with an 8 percent increase in the odds of being in a higher sustainability category, holding GDP and year constant. A 10 point increase in inequality would then roughly double those odds. The log GDP coefficient is interpreted in the same way. Its odds ratio tells us how much the odds of a higher sustainability rating change when GDP per capita increases on the log scale, for example when income doubles or triples.</p>
+<p>Year indicators in the model absorb any global shifts in CPIA scoring standards or common shocks that affect all countries in the same calendar year. This lets us focus on how differences in inequality and income across countries, rather than across years, line up with differences in sustainability ratings</p>
+</section>
+</section>
+<section id="recommended-next-steps" class="level1">
+<h1><strong>4. Recommended Next Steps</strong></h1>
+<p>Based on our results and the limitations of the current data, we see four concrete next steps for the stakeholder.</p>
+<section id="treat-economic-development-as-the-primary-health-and-sustainability-lever" class="level2">
+<h2 class="anchored" data-anchor-id="treat-economic-development-as-the-primary-health-and-sustainability-lever"><strong>4.1. Treat economic development as the primary health and sustainability lever</strong></h2>
+<p>Our findings consistently show that higher GDP per capita is strongly associated with longer life expectancy and with stronger environmental sustainability ratings. The first priority is to continue supporting country programs that expand basic infrastructure, productivity, and fiscal space, especially in lower income countries. In practice this means: prioritizing investments in primary health systems, clean water and sanitation, and energy access, and pairing them with support for domestic revenue and private sector development. We should also encourage country teams to track how these growth oriented investments translate into gains in life expectancy and sustainability scores over time.</p>
+</section>
+<section id="address-inequality-where-it-is-most-closely-linked-to-poor-outcomes" class="level2">
+<h2 class="anchored" data-anchor-id="address-inequality-where-it-is-most-closely-linked-to-poor-outcomes"><strong>4.2. Address inequality where it is most closely linked to poor outcomes</strong></h2>
+<p>Inequality is not a universal predictor in our analysis. Its association with life expectancy is weak in many regions, but meaningfully negative in Sub Saharan Africa even after we control for income. For sustainability ratings, the positive association is likely driven by sample restrictions and unobserved factors rather than a simple causal effect. Our recommendation is to treat inequality as a targeted risk flag rather than a blanket target. Country teams working in Sub Saharan Africa should pair growth support with programs that expand access to basic services for the poorest households, such as primary health care, nutrition, and rural infrastructure. In other regions, inequality focused interventions should be justified by local evidence rather than assumed to improve average life expectancy or environmental performance on their own.</p>
+</section>
+<section id="strengthen-data-and-diagnostic-tools-before-tying-finance-to-inequality-or-sustainability-scores" class="level2">
+<h2 class="anchored" data-anchor-id="strengthen-data-and-diagnostic-tools-before-tying-finance-to-inequality-or-sustainability-scores"><strong>4.3. Strengthen data and diagnostic tools before tying finance to inequality or sustainability scores</strong></h2>
+<p>Both outcomes in this project rely on imperfect indicators. Life expectancy estimates and Gini coefficients can differ across sources and methods, and CPIA sustainability ratings are based on expert judgment for a restricted set of low and lower middle income countries. Before using inequality or sustainability scores to trigger financing decisions, we recommend the following. First, invest in country statistical capacity to improve the coverage and comparability of household surveys and national accounts. Second, complement CPIA scores with objective indicators such as air quality, deforestation rates, and enforcement data where possible. Third, pilot simple dashboards that combine our regression based risk signals with local indicators so that regional teams can see where model based warnings align with country level diagnostics and where they do not.</p>
+</section>
+<section id="deepen-the-analysis-with-richer-covariates-and-country-level-case-work" class="level2">
+<h2 class="anchored" data-anchor-id="deepen-the-analysis-with-richer-covariates-and-country-level-case-work"><strong>4.4. Deepen the analysis with richer covariates and country level case work</strong></h2>
+<p>Our models are intentionally simple and leave out many factors that likely matter, such as governance quality, political regime, natural resource dependence, and urbanization. A natural next step is to link the current dataset with additional public indicators, refit the models, and test whether the key patterns hold. In parallel, we recommend selecting a small set of countries that sit off the expected lines in our figures, for example countries with relatively low life expectancy given their income or unusually high sustainability scores given their inequality. Country teams could use these cases to explore mechanisms that our global models cannot capture, and to identify specific policy levers that are feasible in each context.</p>
+<p>Taken together, these steps let us use the current results as an initial prioritization tool. We rely on economic development as the most robust driver of both health and environmental institutions, treat inequality as a context dependent risk factor, improve the quality of the underlying data, and then combine global patterns with country specific knowledge before making large policy or financing moves.</p>
+</section>
+</section>
+<section id="appendix-a.-data" class="level1">
+<h1><strong>Appendix A. Data</strong></h1>
+<p>Provide more background on the data, including any cleaning that needed to be done that affects the model (e.g., were levels of a categorical variable combined? Did you exclude missing values? If so, how many?). Data cleaning that does not affect the model, such as creating factor variables, does not need to be mentioned (it is always assumed that <em>some</em> cleaning is necessary).</p>
+</section>
+<section id="appendix-b.-models-for-research-question-1" class="level1">
+<h1><strong>Appendix B. Models for Research Question 1</strong></h1>
+<p>Describe the process you used to conduct analysis for both research questions. Describe the types of models that you fit and why they were appropriate, and the assumptions for each model. Specify the covariates in each model, and make sure to include both primary independent variables relevant to the research question <strong>and</strong> potential confounding variables. <strong>You are required to use at least one interaction term in one of your models</strong>. Describe how you assessed your models and any changes you made based on the assessment. Finally, present full summary tables that include estimates, standard errors, confidence intervals, and p-values. These should be on the exponential scale for GLMs.</p>
+</section>
+<section id="appendix-c.-models-for-research-question-2" class="level1">
+<h1><strong>Appendix C. Models for Research Question 2</strong></h1>
+</section>
+<section id="appendix-d.-technical-next-steps" class="level1">
+<h1><strong>Appendix D. Technical Next Steps</strong></h1>
+<p>Finally, describe limitations that you could not address and what you might do next to improve the analysis. This can include impractical steps in the context of a class project such as “collect more data on X.”</p>
+<p>we could probably talk about using different models if we want and using more complete datasets especially for gini and sustainability</p>
+</section>
+<section id="reference" class="level1">
+<h1><strong>Reference</strong></h1>
+<ul>
+<li><p>Deaton, A. (2003). Health, inequality, and economic development. <em>Journal of Economic Literature, 41</em>(1), 113–158.</p></li>
+<li><p>Parrish, R. G. (2010). Measuring population health outcomes. <em>Preventing Chronic Disease, 7</em>(4), A71.</p></li>
+<li><p>United Nations. (2015). <em>Transforming our world: The 2030 Agenda for Sustainable Development.</em> United Nations General Assembly.</p></li>
+<li><p>United Nations Statistics Division. (n.d.). <em>UNdata: About.</em> UNdata. https://data.un.org/</p></li>
+<li><p>Wilkinson, R. G. (2011). Inequality: The enemy between us? <em>European Journal of Social Psychology, 41</em>(2), 255–266.</p></li>
+<li><p>Wilkinson, R. G., &amp; Pickett, K. E. (2009). <em>The spirit level: Why more equal societies almost always do better.</em> Allen Lane.</p></li>
+<li><p>World Bank. (2010). <em>The World Bank’s country policy and institutional assessment: An evaluation.</em> Independent Evaluation Group, World Bank.</p></li>
+<li><p>World Bank. (2022). <em>Country Policy and Institutional Assessment (CPIA) – methodology and criteria.</em> World Bank Group.</p></li>
+</ul>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4</code></pre>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

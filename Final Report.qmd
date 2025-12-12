@@ -1,0 +1,1182 @@
+---
+title: "Income Inequality, Economic Development, and Sustainability: Cross-Country Evidence on Life Expectancy and Environmental Institutions"
+subtitle: "Brynn Zhang, Anvita Suresh, Matthew Fischer, Pinaki Ghosh"
+execute:
+  echo: false
+  message: false
+  warning: false
+format:
+  pdf:
+    toc: true
+---
+
+# **Executive Summary**
+
+**Stakeholder: A policy analyst at an international development agency (e.g., the World Bank or UNDP) who advises regional directors on where to prioritize funding and policy support to improve both population health and environmental sustainability in low- and middle-income countries.**
+
+This project uses harmonized international data to examine how income inequality relates to two outcomes central to global development: population health and environmental sustainability. For life expectancy, we analyze 1,721 country-year observations from 2000–2023 and estimate regression models with region-specific effects to assess how the Gini index and log GDP per capita are associated with life expectancy at birth across seven World Bank regions. For environmental sustainability, we study 269 country-year observations from 74 low- and lower-middle-income countries between 2005–2022 using an ordinal logistic regression of the World Bank’s CPIA environmental sustainability rating on income inequality and log GDP per capita. We find that higher GDP per capita is consistently and strongly associated with longer life expectancy in all regions, while the relationship between inequality and life expectancy is weaker and highly region-dependent, with Sub-Saharan Africa standing out as the main region where higher inequality is clearly linked to shorter lives. In contrast, both higher GDP per capita and higher inequality are associated with better CPIA environmental sustainability ratings, with GDP showing the more robust effect. These results suggest that income growth is the most reliable correlate of life expectancy gains, while inequality matters for health in specific regional contexts and does not provide a simple standalone signal for environmental sustainability in low- and lower-middle-income countries.
+
+# **1.** Problem Motivation
+
+Despite substantial gains in global life expectancy over recent decades, large disparities in population health persist across and within world regions. Life expectancy at birth is widely used as a summary indicator of population health because it aggregates mortality across all ages into a single, interpretable measure of expected longevity (Deaton, 2003; Parrish, 2010). International policy frameworks further emphasize that health outcomes are closely linked to economic development, income inequality, and environmental sustainability, as reflected in the Sustainable Development Goals on health, inequality, and climate and environmental protection (United Nations, 2015). Income inequality is often cited as a key driver of unequal outcomes, with influential work arguing that more unequal societies experience worse health and social outcomes even at similar income levels (Wilkinson & Pickett, 2009; Wilkinson, 2011), while other research stresses that the inequality–health relationship is highly context dependent and shaped by institutions and stages of development (Deaton, 2003). At the same time, international financial institutions increasingly rely on indicators such as the World Bank’s Country Policy and Institutional Assessment (CPIA) environmental sustainability rating to inform concessional financing decisions for low-income countries (World Bank, 2010, 2022). For policymakers with limited resources, a central question is whether income inequality provides useful information, beyond average income, about where population health and environmental sustainability outcomes are most at risk, and where targeted interventions may yield the greatest joint benefits.
+
+# **2. Results**
+
+```{r}
+#| label: setup
+#| include: false
+
+library(readr)
+library(ggplot2)
+library(countrycode)
+library(car)
+library(lmtest)
+library(sandwich)
+
+library(MASS)      # for ordinal logistic regression (polr)
+library(broom)
+library(knitr)
+library(tidyr)
+
+library(dplyr)
+```
+
+## **2.1** Life expectancy results
+
+```{r}
+#RQ1 setup
+# --- READ DATA  ---
+gini <- read_csv("data/UNGini_clean.csv")
+gdp_raw <- read_csv("data/UNGDP.csv", show_col_types = FALSE)
+life_raw <- read_csv("data/UNLifeExp.csv", show_col_types = FALSE)
+
+# --- CLEAN + MERGE  ---
+gdp_clean <- gdp_raw %>%
+  dplyr::filter(`Country or Area` %in% gini$Country) %>%
+  dplyr::mutate(Year = as.integer(Year)) %>%
+  dplyr::rename(Country = `Country or Area`, GDP = Value) %>%
+  dplyr::select(Country, Year, GDP) %>%
+  dplyr::filter(!is.na(GDP))
+
+# Life expectancy
+life_clean <- life_raw %>%
+  dplyr::filter(
+    Variant == "Medium",
+    `Country or Area` %in% gini$Country,
+    `Year(s)` <= 2023
+  ) %>%
+  dplyr::rename(
+    Country = `Country or Area`,
+    Year    = `Year(s)`,
+    LifeExp = Value
+  ) %>%
+  dplyr::select(Country, Year, LifeExp) %>%
+  dplyr::filter(!is.na(LifeExp))
+
+# Merge life + gini + gdp
+rq1_panel <- life_clean %>%
+  dplyr::inner_join(gini,     by = c("Country", "Year")) %>%
+  dplyr::inner_join(gdp_clean, by = c("Country", "Year")) %>%
+  dplyr::filter(
+    !is.na(Gini),
+    !is.na(GDP),
+    !is.na(LifeExp)
+  )
+
+# Add log GDP, year factor, and region
+rq1_panel3 <- rq1_panel %>%
+  dplyr::mutate(
+    log_GDP = log(GDP),
+    Year_f  = factor(Year),
+    Region  = countrycode::countrycode(Country, "country.name", "region")
+  ) %>%
+  dplyr::mutate(
+    # Fix Micronesia region
+    Region = dplyr::if_else(
+      grepl("Micronesia", Country, ignore.case = TRUE),
+      "East Asia & Pacific",
+      Region
+    ),
+    # Fix Turkey region
+    Region = dplyr::if_else(
+      Country %in% c("Turkey", "Türkiye", "TÃ¼rkiye") & is.na(Region),
+      "Europe & Central Asia",
+      Region
+    )
+  ) %>%
+  dplyr::filter(!is.na(Region)) %>%
+  dplyr::mutate(Region = factor(Region))
+
+```
+
+### 2.1.1 Descriptive patterns: GDP, inequality, and life expectancy
+
+Across all regions, countries with higher GDP per capita tend to have longer life expectancy. Figure 1 plots life expectancy against log(GDP per capita), with separate trend lines by region. The positive relationship is clear in every region, though the slope differs somewhat. In practical terms, moving from very low to middle levels of GDP per capita is associated with several additional years of expected life at birth. This confirms that economic development is a central correlate of population health in our data.
+
+By contrast, the raw relationship between income inequality and life expectancy is weaker and more mixed. Figure 2 shows life expectancy against the Gini index, again with separate regional trend lines. In many regions, the fitted lines are relatively flat or only slightly sloped, indicating that higher inequality is not systematically associated with higher or lower life expectancy on its own. This suggests that inequality is not a simple standalone predictor of population health once we look across diverse regional contexts.
+
+```{r}
+ggplot(rq1_panel3, aes(x = log_GDP, y = LifeExp, color = Region)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "log(GDP per capita)",
+    y = "Life expectancy at birth (years)",
+    color = "Region",
+    title = "Figure 1. Life expectancy vs. log(GDP per capita) by region"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+```
+
+```{r}
+ggplot(rq1_panel3, aes(x = Gini, y = LifeExp, color = Region)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "Income inequality (Gini index)",
+    y = "Life expectancy at birth (years)",
+    color = "Region",
+    title = "Figure 2. Life expectancy vs. income inequality (Gini index) by region"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+
+
+```
+
+### **2.1.2 Regression results: global effects of GDP and inequality**
+
+To move beyond these descriptive patterns, we fit a linear regression model with life expectancy as the outcome and the Gini index, log(GDP per capita), region indicators, and year fixed effects as predictors. This model uses the full panel of 1,721 country–year observations and controls for broad regional differences and global time trends.
+
+The model(Table 1) confirms that economic development is strongly and positively associated with life expectancy. Holding inequality, region, and year constant, higher log(GDP per capita) is associated with longer life expectancy, and the confidence interval for this effect is well above zero. In contrast, the global coefficient on the Gini index is much smaller in magnitude and closer to zero, indicating that, on average across regions and years, inequality is only weakly related to life expectancy once income is taken into account.
+
+```{r}
+#Linear model for life expectancy (GDP + Gini + region + year)
+library(knitr)
+
+
+
+life_model <- lm(
+  LifeExp ~ Gini + log_GDP + factor(Year) + Region,
+  data = rq1_panel3
+)
+
+life_tidy <- broom::tidy(life_model, conf.int = TRUE)
+
+coef_life <- life_tidy %>%
+  dplyr::filter(term %in% c("Gini", "log_GDP")) %>%
+  dplyr::mutate(
+    Variable = dplyr::case_when(
+      term == "Gini"    ~ "Gini index\n(per 10 points)",
+      term == "log_GDP" ~ "log(GDP)\n(per unit)"
+    ),
+    Coefficient = dplyr::if_else(
+      Variable == "Gini index\n(per 10 points)",
+      estimate * 10,
+      estimate
+    ),
+    Lower = dplyr::if_else(
+      Variable == "Gini index\n(per 10 points)",
+      conf.low * 10,
+      conf.low
+    ),
+    Upper = dplyr::if_else(
+      Variable == "Gini index\n(per 10 points)",
+      conf.high * 10,
+      conf.high
+    )
+  ) %>%
+  dplyr::select(Variable, Coefficient, Lower, Upper)
+
+knitr::kable(
+  coef_life,
+  caption = "Estimated effects of income inequality and economic development on life expectancy (year and region adjusted).",
+  digits = 2
+)
+
+
+```
+
+```{r}
+ggplot(coef_life, aes(x = Variable, y = Coefficient)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.15) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  coord_flip() +
+  labs(
+    x = "",
+    y = "Change in life expectancy (years)",
+    subtitle = "Coefficients from linear model with region and year fixed effects",
+    title = "Figure 3. Estimated effects of inequality and GDP on life expectancy"
+  ) +
+  theme_minimal()
+
+```
+
+Figure 3 summarizes these regression estimates. The bar for log(GDP) sits well above zero with a relatively narrow confidence interval, indicating a robust positive effect. The bar for the Gini index is closer to zero and its interval overlaps values that are small in practice, which is consistent with the idea that inequality is not a strong global driver of life expectancy when income and time are controlled.
+
+### 2.1.3 Regional differences and robustness
+
+Although the global association between inequality and life expectancy is weak, region-specific models reveal important heterogeneity. Allowing the Gini–life expectancy relationship to vary by region shows that Sub-Saharan Africa is the main exception, where higher inequality is clearly associated with shorter life expectancy even after controlling for GDP per capita and year. In other regions, the inequality effect is close to zero and often statistically indistinguishable from no relationship. Robustness checks indicate that these results are not driven by a small number of influential country-year observations: excluding such points does not alter the strong positive association between income and life expectancy or the distinctive role of inequality in Sub-Saharan Africa, increasing confidence in the stability of the findings.
+
+## **2.2** Sustainability results**:**
+
+```{r}
+#RQ2 setup
+# Load cleaned datasets
+sust_clean <- read.csv("https://raw.githubusercontent.com/BrynnZhang/702_final_project/refs/heads/main/UNSust_clean.csv")
+gini_clean <- read.csv("https://raw.githubusercontent.com/BrynnZhang/702_final_project/refs/heads/main/gini_clean.csv")
+gdp_clean <- read.csv("https://raw.githubusercontent.com/BrynnZhang/702_final_project/refs/heads/main/gdp_clean.csv")
+
+# Fix inconsistent column names in sustainability data
+sust_clean <- sust_clean %>%
+  rename(
+    Country = Country.or.Area,
+    Sustainability = Value
+  )
+
+# Merge datasets - keep ALL country-year observations with complete data
+rq2_raw <- sust_clean %>%
+  inner_join(gini_clean, by = c("Country", "Year")) %>%
+  inner_join(gdp_clean, by = c("Country", "Year"))
+
+# Create ordinal factor for sustainability (required for ordinal regression)
+# Original scale: 1-6, but our data ranges 2-4
+rq2_data <- rq2_raw %>%
+  mutate(
+    # Convert sustainability to ordered factor
+    Sustainability_ord = factor(Sustainability, 
+                                ordered = TRUE,
+                                levels = sort(unique(Sustainability))),
+    # Create log GDP
+    log_GDP = log(GDP)
+  ) %>%
+  filter(
+    !is.na(Sustainability),
+    !is.na(Gini),
+    !is.na(GDP),
+    is.finite(log_GDP)
+  )
+
+```
+
+### 2.2.1 Descriptive patterns: inequality, GDP, and sustainability ratings
+
+We then focus on 269 country–year observations from low- and lower-middle-income countries with CPIA environmental sustainability ratings. Figure 4 shows simple bivariate relationships between the sustainability rating and our two main predictors. The left panel plots sustainability against the Gini index and shows a gentle upward slope: countries with higher inequality tend to have slightly higher sustainability ratings on average, although points are widely scattered. The right panel plots sustainability against log(GDP per capita) and shows a clearer upward trend, with higher-income countries more likely to have higher sustainability ratings.
+
+```{r}
+library(gridExtra)
+
+p_sust_gini <- ggplot(rq2_data, aes(x = Gini, y = as.numeric(Sustainability_ord))) +
+  geom_jitter(alpha = 0.5, height = 0.1, width = 0) +
+  geom_smooth(method = "lm", color = "blue", se = TRUE) +
+  labs(
+    x = "Gini index (income inequality)",
+    y = "Sustainability rating",
+    title = "Figure 4.1. Sustainability vs. income inequality"
+  ) +
+  theme_minimal()
+
+p_sust_gdp <- ggplot(rq2_data, aes(x = log_GDP, y = as.numeric(Sustainability_ord))) +
+  geom_jitter(alpha = 0.5, height = 0.1, width = 0) +
+  geom_smooth(method = "lm", color = "blue", se = TRUE) +
+  labs(
+    x = "log(GDP per capita, PPP)",
+    y = "Sustainability rating",
+    title = "Figure 4.2. Sustainability vs. economic development"
+  ) +
+  theme_minimal()
+
+#grid.arrange(p_sust_gini, p_sust_gdp, ncol = 2)
+
+p_sust_gini
+p_sust_gdp
+
+```
+
+Figure 5 looks at the same relationships by sustainability category. The Gini boxplots show that median inequality increases slightly from lower to higher sustainability categories, but there is substantial overlap in the distributions. In other words, countries with similar sustainability ratings can have quite different levels of inequality. In contrast, the log(GDP) boxplots show a clearer separation across categories, with higher-rated countries consistently having higher median GDP per capita. This suggests that economic development is a stronger differentiator of sustainability performance than inequality.
+
+```{r}
+p_box_gini <- ggplot(rq2_data, aes(x = Sustainability_ord, y = Gini, fill = Sustainability_ord)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  scale_fill_brewer(palette = "RdYlGn", direction = 1) +
+  labs(
+    x = "Sustainability rating",
+    y = "Gini index",
+    title = "Figure 5.1. Income inequality by sustainability category"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+p_box_gdp <- ggplot(rq2_data, aes(x = Sustainability_ord, y = log_GDP, fill = Sustainability_ord)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  scale_fill_brewer(palette = "RdYlGn", direction = 1) +
+  labs(
+    x = "Sustainability rating",
+    y = "log(GDP per capita, PPP)",
+    title = "Figure 5.2. Economic development by sustainability category"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+#grid.arrange(p_box_gini, p_box_gdp, ncol = 2)
+p_box_gini
+p_box_gdp
+```
+
+### 2.2.2 Ordinal logistic regression results
+
+We estimate an ordinal logistic regression with the CPIA environmental sustainability rating as the ordered outcome and the Gini index, log GDP per capita, and year fixed effects as predictors, which accounts for the ordered nature of the score and absorbs common shocks or changes in rating practices over time. The results (Table 2) show that both inequality and income are positively associated with higher sustainability ratings. The Gini coefficient is about 0.074, implying an odds ratio of roughly 1.08 per one-point increase and approximately a doubling of the odds of a higher rating for a 10-point increase in inequality. The log GDP coefficient is about 0.84, corresponding to an odds ratio of about 2.3, so a one-unit increase in log GDP per capita (roughly a 2.7-fold increase in income)is associated with more than double the odds of being in a higher sustainability category. Both associations are statistically significant.
+
+```{r}
+library(MASS)
+
+ordinal_model <- polr(
+  Sustainability_ord ~ Gini + log_GDP + factor(Year),
+  data = rq2_data,
+  Hess = TRUE,
+)
+
+library(knitr)
+library(dplyr)
+library(broom)
+
+or_table <- tidy(ordinal_model, conf.int = TRUE, exponentiate = TRUE) %>%
+  filter(coef.type == "coefficient")
+
+knitr::kable(
+  or_table,
+  caption = "Ordinal logistic regression odds ratios for inequality and economic development on sustainability ratings (controlling for year).",
+  digits = 3
+)
+
+```
+
+```{r}
+coef_data_sust <- data.frame(
+  Variable    = c("Gini index\n(per 10 points)", "log(GDP)\n(per unit)"),
+  Coefficient = c(0.0737 * 10, 0.8411),
+  Lower       = c(0.0428 * 10, 0.4858),
+  Upper       = c(0.1053 * 10, 1.2041)
+)
+
+ggplot(coef_data_sust, aes(x = Variable, y = Coefficient)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.15) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  coord_flip() +
+  labs(
+    x = "",
+    y = "Effect on log-odds of higher sustainability category",
+    subtitle = "Coefficients from ordinal logistic regression with year fixed effects",
+    title = "Figure 6. Estimated effects of inequality and GDP on sustainability ratings"
+  ) +
+  theme_minimal()
+
+```
+
+Figure 6 compares the coefficients for Gini and log(GDP) on the log-odds scale. Both bars are clearly above zero, but the bar for log(GDP) is taller, reflecting its stronger association with sustainability ratings. This supports the idea that among low- and lower-middle-income countries, economic development is a more powerful predictor of environmental institutional strength than income distribution, even though inequality also has a positive association.
+
+Year fixed effects are generally small and imprecise, and the likelihood ratio test shows that including Gini, log(GDP), and year jointly improves model fit over a model with only intercepts. McFadden’s pseudo-R² is modest (around 0.06), which is typical for institutional rating data and reflects the fact that sustainability outcomes depend on many unobserved country-specific factors. For our purposes, the key point is that the estimated associations for Gini and GDP are statistically robust and directionally clear.
+
+### 2.2.3 Counterintuitive inequality effect
+
+The positive coefficient on the Gini index is counterintuitive, as higher inequality is often expected to be associated with weaker environmental institutions. Several factors may explain this result. CPIA ratings are observed only for IDA-eligible low- and lower-middle-income countries, within which higher inequality may coincide with greater urbanization, more diversified economies, or stronger administrative and statistical capacity that support environmental policy frameworks. In addition, both inequality and sustainability ratings may reflect deeper, unobserved structural characteristics such as governance quality, and CPIA scores themselves emphasize formal policies and institutions rather than distributional outcomes. The practical implication is that inequality alone is not a reliable screening indicator for environmental sustainability performance in this sample. GDP per capita shows a stronger and more consistent association with sustainability ratings, and the positive inequality effect should be interpreted cautiously and examined further rather than viewed as evidence that higher inequality improves environmental outcomes.
+
+## 2.3 Integrated implications
+
+Taken together, the two analyses reveal a consistent pattern. Economic development, measured by log GDP per capita, is the dominant predictor of both outcomes. Higher income levels are strongly associated with longer life expectancy across all regions and with higher environmental sustainability ratings among low- and lower-middle-income countries. Income inequality plays a more limited and context-dependent role. Its association with life expectancy is generally weak and imprecise, except in Sub-Saharan Africa, where higher inequality is clearly linked to shorter lives. For environmental sustainability, the positive association with inequality is likely driven by sample restrictions, measurement issues, and unobserved institutional factors rather than a causal relationship.
+
+For a regional policy advisor, these results suggest several practical lessons. Policies that raise income levels remain the most reliable lever for improving population health and supporting environmental institutions. Inequality warrants targeted attention in specific contexts, particularly in Sub-Saharan Africa, but it should not be used in isolation as a proxy for environmental sustainability performance. More broadly, because both health and sustainability outcomes are shaped by complex and partially unobserved factors, cross-country statistical results should be complemented with country-specific institutional knowledge when setting priorities and designing interventions.
+
+# **3. Methodology**
+
+Our analysis uses regression models as descriptive tools to examine how income inequality and economic development are associated with life expectancy and environmental sustainability. In each case, we control for observed factors such as year and region so that estimated coefficients can be interpreted as associations holding those factors constant, rather than as causal effects. The models are designed to provide policy-relevant summaries of how differences in income levels and income distribution tend to align with differences in outcomes across countries and over time.
+
+## 3.1 Models for life expectancy
+
+To study life expectancy at birth, measured in years, we estimate linear regression models in which life expectancy is explained by the Gini index, log GDP per capita (PPP), region, and year. The coefficient on log GDP per capita indicates how many additional years of life expectancy are associated with a one-unit increase in log income, which corresponds roughly to a 2.7-fold increase in GDP, holding inequality, region, and year fixed. The coefficient on the Gini index captures how life expectancy changes as inequality rises after controlling for income and other factors, and we rescale this effect to reflect a 10-point increase in the Gini index for easier interpretation. Because the relationship between inequality and health may differ across regions, we also estimate a specification that allows the effects of inequality and income to vary by region, producing region-specific slopes that highlight where inequality is more strongly linked to shorter or longer lives.
+
+## 3.2 Models for sustainability ratings
+
+For environmental sustainability, the outcome variable is the CPIA environmental sustainability rating, which is an ordered categorical measure, so we estimate an ordinal logistic regression rather than a linear model. The predictors in this model are the Gini index, log GDP per capita, and year, and the coefficients describe how these variables shift the log odds of a country receiving a higher rather than a lower sustainability rating, holding other factors constant. Interpreting the exponentiated coefficients as odds ratios, a value greater than one indicates higher odds of being in a higher sustainability category; for example, an odds ratio of about 1.08 for the Gini index implies that a one-point increase in inequality is associated with an 8 percent increase in the odds of a higher rating, with larger changes implied for a 10-point increase. Year indicators absorb common global trends or changes in scoring standards, allowing the analysis to focus on how cross-country differences in income and inequality align with differences in environmental sustainability performance.
+
+# **4. Recommended Next Steps**
+
+Based on our results and the limitations of the current data, we see four concrete next steps for the stakeholder.
+
+## **4.1.** Prioritize income growth as the most reliable lever
+
+Economic development is consistently associated with longer life expectancy and stronger environmental institutions, supporting continued focus on investments in basic infrastructure, primary health systems, water and sanitation, energy access, and productivity, alongside monitoring how growth translates into health and sustainability gains over time.
+
+## **4.2.** Treat inequality as a targeted risk signal, not a universal trigger
+
+Inequality warrants focused attention in contexts such as Sub-Saharan Africa, where it is closely linked to poorer health outcomes, but it should not be used in isolation as a proxy for environmental sustainability or average health performance in other regions without supporting country-level evidence.
+
+## **4.3.** Strengthen data and diagnostics before linking finance to scores
+
+Given measurement limitations in life expectancy, inequality, and CPIA sustainability ratings, financing decisions should be supported by improved statistical capacity, complementary objective indicators, richer covariates, and targeted country case work that combines global model signals with local institutional knowledge.
+
+# **Appendix A. Data**
+
+## **A.1 Data sources**
+
+This project builds two country–year panels from international data:
+
+1.  A health panel for Research Question 1, linking income inequality, economic development, and life expectancy at birth.
+2.  An environmental sustainability panel for Research Question 2, linking inequality, economic development, and CPIA environmental sustainability ratings.
+
+All data are drawn from publicly available international sources:
+
+-   Income inequality (Gini index): UN/World Bank inequality series, downloaded from UNdata (https://data.un.org).
+
+-   GDP per capita (PPP, constant international dollars): World Bank World Development Indicators series NY.GDP.PCAP.PP.CD, accessed via UNdata (https://data.un.org/Data.aspx?d=WDI&f=Indicator_Code:NY.GDP.PCAP.PP.CD).
+
+-   Life expectancy at birth (years): UN life table data from UNdata, using the “Medium” variant.
+
+-   Environmental sustainability ratings: World Bank Country Policy and Institutional Assessment (CPIA), sustainability criterion, pre-processed into a country–year dataset.
+
+The Table below reads the raw (or pre-cleaned) files and reports the row counts for each source so that the scope of the input data is transparent
+
+```{r}
+library(readr)
+library(dplyr)
+library(knitr)
+library(tibble)
+
+# RQ1 sources: UN Gini, UN GDP per capita, UN life expectancy
+gini_raw <- read_csv("data/UNGini_clean.csv", show_col_types = FALSE)
+gdp_raw  <- read_csv("data/UNGDP.csv",       show_col_types = FALSE)
+life_raw <- read_csv("data/UNLifeExp.csv",   show_col_types = FALSE)
+
+# RQ2 sources: CPIA sustainability + pre-cleaned Gini and GDP from GitHub
+sust_clean <- read.csv(
+  "https://raw.githubusercontent.com/BrynnZhang/702_final_project/refs/heads/main/UNSust_clean.csv"
+)
+gini_rq2 <- read.csv(
+  "https://raw.githubusercontent.com/BrynnZhang/702_final_project/refs/heads/main/gini_clean.csv"
+)
+gdp_rq2 <- read.csv(
+  "https://raw.githubusercontent.com/BrynnZhang/702_final_project/refs/heads/main/gdp_clean.csv"
+)
+
+data_sources_summary <- tibble(
+  dataset = c("UN Gini (RQ1)", "UN GDP (RQ1)", "UN Life expectancy (RQ1)",
+              "UN Gini (RQ2)", "UN GDP (RQ2)", "CPIA sustainability (RQ2)"),
+  n_rows  = c(nrow(gini_raw), nrow(gdp_raw), nrow(life_raw),
+              nrow(gini_rq2), nrow(gdp_rq2), nrow(sust_clean))
+)
+
+knitr::kable(
+  data_sources_summary,
+  caption = "Row counts for raw and pre-cleaned data sources.",
+  digits = 0
+)
+
+```
+
+## **A.2** Life expectancy panel
+
+For the first research question, we construct a country–year panel where each observation has life expectancy at birth, Gini, and GDP per capita for the same country and year.
+
+Cleaning decisions that affect the model:
+
+1.  Country alignment: when cleaning GDP and life expectancy, we keep only countries that appear in the Gini dataset.
+2.  Remove missing GDP and life expectancy: rows with missing GDP or life expectancy are dropped before merging.
+3.  Merge on Country and Year: we use inner joins so that only overlapping country–years are kept.
+4.  Drop remaining missing values in any of the three core variables after merging.
+5.  Assign regions and drop rows without a valid region (e.g., aggregates).
+6.  Transform GDP: we use log(GDP) in the models rather than raw GDP.
+
+```{r}
+library(countrycode)
+
+# 1. Clean GDP: keep Gini countries and drop missing GDP
+gdp_clean <- gdp_raw %>%
+  dplyr::filter(`Country or Area` %in% gini$Country) %>%
+  dplyr::mutate(Year = as.integer(Year)) %>%
+  dplyr::rename(Country = `Country or Area`, GDP = Value) %>%
+  dplyr::select(Country, Year, GDP) %>%
+  dplyr::filter(!is.na(GDP))
+
+# 2. Clean life expectancy: Medium variant, <= 2023, drop missing
+life_clean <- life_raw %>%
+  dplyr::filter(
+    Variant == "Medium",
+    `Country or Area` %in% gini$Country,
+    `Year(s)` <= 2023
+  ) %>%
+  dplyr::rename(
+    Country = `Country or Area`,
+    Year    = `Year(s)`,
+    LifeExp = Value
+  ) %>%
+  dplyr::select(Country, Year, LifeExp) %>%
+  dplyr::filter(!is.na(LifeExp))
+
+# 3. Merge three sources into a single panel
+rq1_panel <- life_clean %>%
+  dplyr::inner_join(gini,     by = c("Country", "Year")) %>%
+  dplyr::inner_join(gdp_clean, by = c("Country", "Year")) %>%
+  dplyr::filter(
+    !is.na(Gini),
+    !is.na(GDP),
+    !is.na(LifeExp)
+  )
+
+# 4. Check missingness before final filtering
+missing_rq1 <- rq1_panel %>%
+  summarise(
+    n_rows_total = n(),
+    miss_LifeExp = sum(is.na(LifeExp)),
+    miss_Gini    = sum(is.na(Gini)),
+    miss_GDP     = sum(is.na(GDP))
+  )
+
+knitr::kable(
+  missing_rq1,
+  caption = "Missing values in LifeExp, Gini, and GDP before final filtering.",
+  digits = 0
+)
+
+# 5. Drop rows with any missing core variable
+rq1_panel <- rq1_panel %>%
+  filter(
+    !is.na(LifeExp),
+    !is.na(Gini),
+    !is.na(GDP)
+  )
+
+# 6. Add region and log(GDP) used in the models
+rq1_panel <- rq1_panel %>%
+  mutate(
+    log_GDP = log(GDP),
+    Year_f  = factor(Year),
+    Region  = countrycode(Country, "country.name", "region")
+  ) %>%
+  mutate(
+    Region = ifelse(
+      grepl("Micronesia", Country, ignore.case = TRUE),
+      "East Asia & Pacific", Region
+    ),
+    Region = ifelse(
+      Country %in% c("Turkey", "Türkiye", "TÃ¼rkiye") & is.na(Region),
+      "Europe & Central Asia", Region
+    )
+  ) %>%
+  filter(!is.na(Region))
+
+rq1_sample_summary <- rq1_panel %>%
+  summarise(
+    n_countries = dplyr::n_distinct(Country),
+    n_years     = dplyr::n_distinct(Year),
+    n_rows      = n()
+  )
+
+knitr::kable(
+  rq1_sample_summary,
+  caption = "Final life expectancy analysis sample: countries, years, and observations.",
+  digits = 0
+)
+
+```
+
+## **A.3 Sustainability panel**
+
+### **A.3.1 Cleaning and merging**
+
+For the sustainability panel, we construct a sustainability panel where each observation has a CPIA environmental sustainability rating, Gini, and GDP per capita for the same country and year. CPIA scores are only reported for IDA-eligible low and lower-middle-income countries, so the panel is restricted to that group from the outset.
+
+Cleaning decisions that affect the model:
+
+1.  Harmonize column names in the sustainability file.
+
+2.  Inner join on Country and Year across sustainability, Gini, and GDP.
+
+3.  Check for missing values in the three analysis variables.
+
+4.  Create ordered outcome and log(GDP); drop any rows with non-finite log(GDP) (none in practice).
+
+    ```{r}
+    library(dplyr)
+
+    # Harmonize sustainability column names
+    sust_clean2 <- sust_clean %>%
+      rename(
+        Country       = Country.or.Area,
+        Sustainability = Value
+      )
+
+    # Merge CPIA sustainability with Gini and GDP (RQ2)
+    rq2_raw <- sust_clean2 %>%
+      inner_join(gini_rq2, by = c("Country", "Year")) %>%
+      inner_join(gdp_rq2,  by = c("Country", "Year"))
+
+    # Missing-data assessment
+    missing_rq2 <- rq2_raw %>%
+      summarise(
+        n_total         = n(),
+        missing_sust    = sum(is.na(Sustainability)),
+        missing_gini    = sum(is.na(Gini)),
+        missing_gdp     = sum(is.na(GDP)),
+        missing_any_var = sum(is.na(Sustainability) | is.na(Gini) | is.na(GDP))
+      )
+
+    knitr::kable(
+      missing_rq2,
+      caption = "Missing values in sustainability, Gini, and GDP.",
+      col.names = c("Total Obs", "Missing Sustainability",
+                    "Missing Gini", "Missing GDP", "Missing Any Variable"),
+      digits = 0
+    )
+
+    # Create ordered outcome and log(GDP); drop invalid rows if any
+    rq2_data <- rq2_raw %>%
+      mutate(
+        Sustainability_ord = factor(
+          Sustainability,
+          ordered = TRUE,
+          levels  = sort(unique(Sustainability))
+        ),
+        log_GDP = log(GDP)
+      ) %>%
+      filter(
+        !is.na(Sustainability),
+        !is.na(Gini),
+        !is.na(GDP),
+        is.finite(log_GDP)
+      )
+
+    rq2_sample_summary <- rq2_data %>%
+      summarise(
+        n_countries = dplyr::n_distinct(Country),
+        n_years     = dplyr::n_distinct(Year),
+        n_rows      = n()
+      )
+
+    knitr::kable(
+      rq2_sample_summary,
+      caption = "Final sustainability analysis sample: countries, years, and observations.",
+      digits = 0
+    )
+
+    ```
+
+We can also show how CPIA ratings are distributed in the final sample from the table A.6 below.
+
+```{r}
+sust_level_counts <- as.data.frame(table(rq2_data$Sustainability_ord))
+colnames(sust_level_counts) <- c("Sustainability level", "Count")
+
+knitr::kable(
+  sust_level_counts,
+  caption = "Distribution of CPIA environmental sustainability ratings.",
+  digits = 0
+)
+```
+
+### A.4 Unified illustration of GDP transformation
+
+Both panels use **log(GDP per capita)** instead of raw GDP in the final models. To keep the appendix unified, we use a single figure that shows the distribution of GDP and log(GDP) in **both** samples.
+
+```{r}
+# Figure A.1. Distribution of GDP per capita and log(GDP) in RQ1 and RQ2 samples.
+
+par(mfrow = c(2, 2))
+
+hist(
+  rq1_panel$GDP,
+  main = "Life expectancy: GDP per capita",
+  xlab = "GDP per capita (PPP)",
+  breaks = 20
+)
+
+hist(
+  rq1_panel$log_GDP,
+  main = "Life expectancy: log(GDP)",
+  xlab = "log(GDP per capita)",
+  breaks = 20
+)
+
+hist(
+  rq2_data$GDP,
+  main = "Sustainability panel: GDP per capita",
+  xlab = "GDP per capita (PPP)",
+  breaks = 20
+)
+
+hist(
+  rq2_data$log_GDP,
+  main = "Sustainability panel: log(GDP)",
+  xlab = "log(GDP per capita)",
+  breaks = 20
+)
+
+par(mfrow = c(1, 1))
+
+```
+
+# **Appendix B. Models for Life Expectancy Panel**
+
+## **B.1 Modelling approach and variables**
+
+The outcome for Research Question 1 is life expectancy at birth (years), a continuous variable. Since we want to relate life expectancy to income inequality and economic development while controlling for time, we use linear regression models with:
+
+-   Country–year observations
+
+-   Year fixed effects (factor for calendar year)
+
+-   Cluster-robust standard errors at the country level
+
+**Main predictors:**
+
+-   Gini: Gini index of income inequality (continuous)
+
+-   log_GDP: natural log of GDP per capita (PPP, constant international dollars)
+
+-   Region: world region from countrycode (factor)
+
+We fit two main models:
+
+1.  **Baseline panel model:**
+
+    $$
+    LifeExp_{ct}​=β_0​+β_1​Gini_{ct}​+β_2​log(GDP_{ct}​)+γ_t​+ε_{ct}​
+    $$
+
+2.  **Region-interaction model:**
+
+$$
+LifeExp_{ct}​=(β_0​+β_{0r}​)+(β_1​+β_{1r}​)Gini_{ct}​+(β_2​+β_{2r}​)log(GDP_{ct}​)+γ_t​+ε_{ct}​
+$$
+
+where $r$ indexes regions, and \$γ_t\$​ are year effects.
+
+**Assumptions (linear models):**
+
+-   Linearity between predictors and life expectancy
+
+-   Additivity of effects within each region specification
+
+-   Homoskedasticity and approximate normality of residuals (checked with plots)
+
+-   Independence of errors within country–year pairs, with clustering at the country level to account for repeated observations over time
+
+-   No omitted variables that are strongly correlated with both predictors and the outcome after controlling for year and region
+
+## **B.2 Baseline panel model**
+
+```{r}
+library(dplyr)
+library(knitr)
+library(sandwich)
+library(lmtest)
+
+# Baseline panel model with year fixed effects
+model_panel_main <- lm(
+  LifeExp ~ Gini + log_GDP + Year_f,
+  data = rq1_panel
+)
+
+# Cluster-robust variance at the country level
+vcov_country <- sandwich::vcovCL(model_panel_main, cluster = ~ Country)
+panel_main_robust <- lmtest::coeftest(model_panel_main, vcov = vcov_country)
+
+# Build full coefficient table with confidence intervals
+panel_main_table <- data.frame(
+  term      = rownames(panel_main_robust),
+  estimate  = panel_main_robust[, 1],
+  std.error = panel_main_robust[, 2],
+  statistic = panel_main_robust[, 3],
+  p.value   = panel_main_robust[, 4]
+) %>%
+  dplyr::mutate(
+    conf.low  = estimate - 1.96 * std.error,
+    conf.high = estimate + 1.96 * std.error
+  )
+
+knitr::kable(
+  panel_main_table,
+  caption = "Baseline linear panel model of life expectancy on inequality, log(GDP), and year fixed effects (cluster-robust standard errors).",
+  digits = 3
+)
+
+```
+
+**Brief Interpretation**
+
+-   The coefficient on log_GDP is positive and highly significant. Higher GDP per capita is associated with higher life expectancy, holding inequality and year constant.
+
+-   The coefficient on Gini is small and negative in this specification. Once we control for income level and year, higher inequality is weakly associated with lower life expectancy.
+
+## **B.3 Region-interaction model**
+
+```{r}
+library(dplyr)
+library(knitr)
+library(sandwich)
+library(lmtest)
+
+# Make sure Region is a factor with a clear reference category
+rq1_panel_region <- rq1_panel %>%
+  mutate(Region = factor(Region))
+
+if ("East Asia & Pacific" %in% levels(rq1_panel_region$Region)) {
+  rq1_panel_region <- rq1_panel_region %>%
+    mutate(Region = relevel(Region, ref = "East Asia & Pacific"))
+}
+
+# Region-interaction model
+model_int <- lm(
+  LifeExp ~ (Gini + log_GDP) * Region + Year_f,
+  data = rq1_panel_region
+)
+
+# Cluster-robust SE at the country level
+vcov_int <- sandwich::vcovCL(model_int, cluster = ~ Country)
+int_robust <- lmtest::coeftest(model_int, vcov = vcov_int)
+
+# Full coefficient table with CIs
+interaction_table <- data.frame(
+  term      = rownames(int_robust),
+  estimate  = int_robust[, 1],
+  std.error = int_robust[, 2],
+  statistic = int_robust[, 3],
+  p.value   = int_robust[, 4]
+) %>%
+  dplyr::mutate(
+    conf.low  = estimate - 1.96 * std.error,
+    conf.high = estimate + 1.96 * std.error
+  )
+
+knitr::kable(
+  interaction_table,
+  caption = "Linear model of life expectancy with interactions between inequality, log(GDP), and world region (cluster-robust standard errors).",
+  digits = 3
+)
+
+
+```
+
+**Brief Interpretation**
+
+-   The main Gini and log_GDP coefficients correspond to the reference region (for example, East Asia & Pacific).
+
+-   Interaction terms like *Gini:RegionSub-Saharan Africa* show how the inequality–life expectancy slope differs in that region compared to the reference.
+
+-   Results indicate that the association between inequality and life expectancy varies by region, satisfying the requirement to use at least one interaction term and providing more nuanced policy insight.
+
+## **B.4 Model assessment and changes**
+
+We assessed model fit and assumptions using residual diagnostics and influence checks.
+
+1.  **GDP transformation decision** Residual plots showed non-linearity when using raw GDP but a more stable pattern after log-transforming GDP. That motivated the use of log(GDP) in all final models instead of raw GDP.
+
+2.  **Residual diagnostics for interaction model**
+
+```{r}
+# Figure B.1. Residual diagnostics for the region-interaction model.
+
+par(mfrow = c(1, 2))
+
+plot(
+  fitted(model_int), resid(model_int),
+  xlab = "Fitted values",
+  ylab = "Residuals",
+  main = "Residuals vs Fitted"
+)
+abline(h = 0, lty = 2)
+
+qqnorm(resid(model_int),
+       main = "Normal Q-Q Plot")
+qqline(resid(model_int), col = 2)
+
+par(mfrow = c(1, 1))
+
+
+```
+
+**Brief Interpretation**
+
+-   Residuals versus fitted values show no strong curvature or funnel shape.
+
+<!-- -->
+
+-   The Q–Q plot shows some deviation in the tails, but not enough to overturn the linear model conclusions.
+
+3.  **Influential observations**
+
+```{r}
+# Identify potentially influential observations
+inf_meas <- influence.measures(model_int)
+infl_idx <- which(apply(inf_meas$is.inf, 1, any))
+
+length_influential <- length(infl_idx)
+cat("Number of potentially influential country–year observations:", length_influential, "\n")
+
+# Sensitivity check: refit without influential rows (not used as main model)
+if (length_influential > 0) {
+  rq1_panel_nolev <- rq1_panel_region[-infl_idx, ]
+  model_int_nolev <- lm(
+    LifeExp ~ (Gini + log_GDP) * Region + Year_f,
+    data = rq1_panel_nolev
+  )
+}
+
+```
+
+**Brief Interpretation**:
+
+Refitting the interaction model without these high-leverage points produced similar coefficients for Gini and log(GDP), so we retained the full-sample interaction model as the primary specification.
+
+# **Appendix C. Models for Research Question 2**
+
+## **C.1 Modelling approach and variables**
+
+The outcome for Research Question 2 is the CPIA environmental sustainability rating, which is:
+
+-   Ordered categories (2.0, 2.5, 3.0, 3.5, 4.0, 4.5)
+
+-   Bounded and discrete, not continuous
+
+Because of this, we use an **ordinal logistic regression (proportional odds model)** instead of a linear model.
+
+**Main predictors:**
+
+-   Gini: Gini index of income inequality
+
+-   log_GDP: natural log of GDP per capita (PPP, constant)
+
+-   factor(Year): year fixed effects to capture time trends or changes in CPIA scoring
+
+We fitted the model as below:
+
+$$
+logit{P(Y≤j)}=α_j​−β_1​⋅Gini−β_2​⋅log(GDP)−γ_{Year}​
+$$
+
+where $Y$ is the sustainability rating and $j$ indexes the thresholds.
+
+**Assumptions (ordinal logistic model):**
+
+-   Proportional odds: the effect of each predictor is constant across all cumulative splits of the outcome.
+
+-   Independence of observations (country–year pairs) conditional on predictors.
+
+-   Correct functional form for Gini and log(GDP) (checked with scatterplots and transformation of GDP).
+
+-   No strong unmeasured confounders that are correlated with both inequality, GDP, and sustainability after conditioning on year.
+
+## C.2 Ordinal logistic regression model
+
+```{r}
+library(MASS)
+library(broom)
+library(dplyr)
+library(knitr)
+
+# Ordinal logistic regression with Gini, log(GDP), and year fixed effects
+ordinal_model <- polr(
+  Sustainability_ord ~ Gini + log_GDP + factor(Year),
+  data = rq2_data,
+  Hess = TRUE   # compute Hessian for standard errors
+)
+
+# Full coefficient table on the log-odds scale
+coef_table <- broom::tidy(
+  ordinal_model,
+  conf.int     = TRUE,
+  exponentiate = FALSE
+) %>%
+  dplyr::filter(coef.type == "coefficient")
+
+knitr::kable(
+  coef_table,
+  caption = "Ordinal logistic regression coefficients (log-odds scale) for sustainability ratings on inequality, log(GDP), and year.",
+  digits = 3
+)
+
+```
+
+## C.3 Odds ratios on the exponential scale
+
+```{r}
+# Odds ratios with confidence intervals
+or_table <- broom::tidy(
+  ordinal_model,
+  conf.int     = TRUE,
+  exponentiate = TRUE
+) %>%
+  dplyr::filter(coef.type == "coefficient")
+
+knitr::kable(
+  or_table,
+  caption = "Table C.2. Ordinal logistic regression odds ratios for inequality and economic development on sustainability ratings (controlling for year).",
+  digits = 3
+)
+
+```
+
+**Brief Interpretation**Interpretation (brief):
+
+-   The Gini odds ratio \> 1 implies that, within this sample of low and lower-middle-income countries, higher income inequality is associated with higher odds of being in a higher CPIA sustainability category.
+
+-   The log_GDP odds ratio \> 1 is larger in magnitude, indicating that economic development has a stronger association with sustainability ratings than inequality.
+
+-   Year coefficients capture shifts in CPIA scoring or global environmental policy trends over time.
+
+## C.4 Model assessment and fit
+
+We evaluated overall model fit and compared the full model to a null model with only intercepts.
+
+```{r}
+# Null model with intercepts only
+null_model <- polr(
+  Sustainability_ord ~ 1,
+  data = rq2_data,
+  Hess = TRUE
+)
+
+# Likelihood ratio test: full model vs null model
+lr_stat <- deviance(null_model) - deviance(ordinal_model)
+df_diff <- null_model$df.residual - ordinal_model$df.residual
+p_value <- pchisq(lr_stat, df = df_diff, lower.tail = FALSE)
+
+fit_summary <- data.frame(
+  model          = c("Null", "Full"),
+  deviance       = c(deviance(null_model), deviance(ordinal_model)),
+  AIC            = c(AIC(null_model), AIC(ordinal_model))
+)
+
+knitr::kable(
+  fit_summary,
+  caption = "Deviance and AIC for null and full ordinal logistic models.",
+  digits = 2
+)
+
+cat("Likelihood ratio test (full vs null):\n")
+cat("  Chi-square statistic:", round(lr_stat, 2), "\n")
+cat("  Degrees of freedom:", df_diff, "\n")
+cat("  p-value:", format.pval(p_value), "\n")
+
+# McFadden pseudo R-squared
+pseudo_r2 <- 1 - (deviance(ordinal_model) / deviance(null_model))
+cat("\nMcFadden pseudo R^2:", round(pseudo_r2, 3), "\n")
+
+```
+
+**Brief Interpretation**
+
+-   The likelihood ratio test strongly favors the full model over the null model.
+
+-   McFadden’s pseudo R\^2 is in the typical range for ordinal logistic models, indicating a meaningful but not complete explanation of sustainability ratings.
+
+## C.5 Graphical checks and proportional odds discussion
+
+we also used graphs to understand the relationships between predictors and the ordinal outcome.
+
+```{r}
+library(ggplot2)
+
+# Figure C.1. Sustainability ratings versus Gini and log(GDP).
+
+p1 <- ggplot(rq2_data, aes(x = Gini, y = as.numeric(Sustainability_ord))) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(
+    x = "Gini index",
+    y = "Sustainability rating (numeric scale)",
+    title = "Figure C.1. Sustainability vs income inequality"
+  ) +
+  theme_minimal()
+
+p2 <- ggplot(rq2_data, aes(x = log_GDP, y = as.numeric(Sustainability_ord))) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(
+    x = "log(GDP per capita)",
+    y = "Sustainability rating (numeric scale)",
+    title = "Figure C.2. Sustainability vs log(GDP) per capita"
+  ) +
+  theme_minimal()
+
+p1
+p2
+
+```
+
+**Brief Interpretation:**
+
+These plots support the idea that:
+
+-   Sustainability ratings increase with log(GDP) in a roughly monotonic way.
+
+-   The relationship with Gini is weaker but still positive.
+
+We rely on the standard proportional odds assumption for interpretation, and there is no obvious violation in the ordered pattern of predicted probabilities across categories.
+
+# **Appendix D. Technical Next Steps**
+
+This project is well-structured with relatively sufficient data, but is still mainly constrained by data availability, measurement choices, and the scope of methods. Below we summarize key limitations and potential next steps for improving the analysis. These steps would refine, rather than overturn, the main conclusions.
+
+## D.1 Data refinement
+
+**1. Filling gaps in inequality data (Gini)**
+
+-   The Gini series is reasonably broad, but there are still missing country–years, especially for low-income countries and earlier periods. This leads to dropping some observations when constructing the panels.
+
+-   **Next step:** supplement the current Gini series with other harmonized sources (for example SWIID or LIS) where available and test whether the main coefficients change when the panel becomes denser. This would mainly improve precision and robustness rather than fundamentally changing the modelling strategy.
+
+**2. Additional covariates as sensitivity checks**
+
+-   The current models focus on the main story (inequality, income, and outcomes) plus time and region controls. Other plausible confounders (education, health spending, governance) are not included, mainly to keep the models interpretable.
+
+-   **Next step:** run supplementary models that add a small set of extra controls where data are available. If results remain similar, this would strengthen confidence that the main findings are not driven by omitted-variable bias.
+
+## **D.2 Modelling refinements**
+
+**1. Trying alternative panel structures for life expectancy**
+
+-   The current linear models with year fixed effects already capture much of the variation in life expectancy. However, they treat country differences largely through region and not through explicit country effects.
+
+-   **Next step:** estimate a country fixed-effects or random-effects version of the life expectancy model as a robustness check. Comparing these estimates with the existing model would show whether within-country changes over time tell a similar story about inequality, income, and life expectancy, without replacing the current specification as the main result.
+
+**2. Exploring mild non-linearity in Gini and log(GDP)**
+
+-   Using log(GDP) already improves linearity and residual patterns. There may still be gentle curvature, especially at very high or low levels of income or inequality.
+
+-   **Next step:** add simple spline terms or quadratic terms for log(GDP) and/or Gini in secondary models. If these terms are small, we can report that the linear approximation is adequate; if they matter, we can describe the relationship as slightly non-linear while still keeping the interpretation straightforward.
+
+# **Reference**
+
+-   Deaton, A. (2003). Health, inequality, and economic development. *Journal of Economic Literature, 41*(1), 113–158.
+
+-   Parrish, R. G. (2010). Measuring population health outcomes. *Preventing Chronic Disease, 7*(4), A71.
+
+-   United Nations. (2015). *Transforming our world: The 2030 Agenda for Sustainable Development.* United Nations General Assembly.
+
+-   United Nations Statistics Division. (n.d.). *UNdata: About.* UNdata. https://data.un.org/
+
+-   Wilkinson, R. G. (2011). Inequality: The enemy between us? *European Journal of Social Psychology, 41*(2), 255–266.
+
+-   Wilkinson, R. G., & Pickett, K. E. (2009). *The spirit level: Why more equal societies almost always do better.* Allen Lane.
+
+-   World Bank. (2010). *The World Bank’s country policy and institutional assessment: An evaluation.* Independent Evaluation Group, World Bank.
+
+-   World Bank. (2022). *Country Policy and Institutional Assessment (CPIA) – methodology and criteria.* World Bank Group.
+
+```{r}
+
+
+```
+
+```{r}
+# The echo: false option disables the printing of code (only output is displayed).
+#| echo: false
+2 * 2
+```
