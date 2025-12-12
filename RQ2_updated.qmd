@@ -1,0 +1,875 @@
+---
+title: "Research Question 2"
+subtitle: "Income Inequality and Environmental Sustainability"
+format: pdf
+execute:
+  echo: false
+  message: false
+  warning: false
+editor: visual
+---
+
+# Research Question 2
+
+**How is income inequality (Gini index) related to environmental sustainability performance after controlling for GDP per capita?**
+
+This analysis examines whether countries with higher income inequality demonstrate different levels of environmental institutional strength, as measured by the World Bank's Country Policy and Institutional Assessment (CPIA) sustainability rating.
+
+## 1. Data Sources and Structure
+
+### 1.1 Data Sources
+
+Three UN-based datasets were merged by Country and Year:
+
+-   **CPIA Sustainability Rating**: World Bank Country Policy and Institutional Assessment (CPIA) for environmental sustainability (13th criterion)
+-   **Gini Index**: Income inequality measure from UN data
+-   **GDP per Capita (PPP)**: Economic development indicator from UN data
+
+### 1.2 Sample Size and Coverage
+
+**Important note on sample size difference from RQ1:**
+
+Research Question 1 (life expectancy analysis) used 1,721 country-year observations across 2000-2023 because life expectancy, GDP, and Gini data are widely reported annually for most countries worldwide.
+
+Research Question 2 has fewer observations because:
+
+1.  **CPIA sustainability ratings are not universally available**: The World Bank only assesses CPIA scores for low-income and lower-middle-income countries that are eligible for IDA (International Development Association) financing, not for all countries
+2.  **Ratings are not collected annually for all countries**: CPIA assessments occur periodically, and not every country is assessed every year
+3.  **Limited temporal overlap**: Country-year observations are only included when all three variables (Sustainability, Gini, GDP) are available for the same country in the same year
+
+The analysis uses **all available country-year observations** where Sustainability, Gini, and GDP data overlap, resulting in a panel dataset spanning 2005-2022.
+
+```{r load-libraries}
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(MASS)      # for ordinal logistic regression (polr)
+library(broom)
+library(knitr)
+library(tidyr)
+```
+
+## 2. Data Preparation and Cleaning
+
+### 2.1 Loading and Merging Data
+
+```{r load-data}
+# Load cleaned datasets
+sust_clean <- read.csv("https://raw.githubusercontent.com/BrynnZhang/702_final_project/refs/heads/main/UNSust_clean.csv")
+gini_clean <- read.csv("https://raw.githubusercontent.com/BrynnZhang/702_final_project/refs/heads/main/gini_clean.csv")
+gdp_clean <- read.csv("https://raw.githubusercontent.com/BrynnZhang/702_final_project/refs/heads/main/gdp_clean.csv")
+
+# Fix inconsistent column names in sustainability data
+sust_clean <- sust_clean %>%
+  rename(
+    Country = Country.or.Area,
+    Sustainability = Value
+  )
+
+# Merge datasets - keep ALL country-year observations with complete data
+rq2_raw <- sust_clean %>%
+  inner_join(gini_clean, by = c("Country", "Year")) %>%
+  inner_join(gdp_clean, by = c("Country", "Year"))
+
+# Show dimensions and structure
+cat("Merged dataset dimensions:", nrow(rq2_raw), "rows,", ncol(rq2_raw), "columns\n")
+cat("Year range:", min(rq2_raw$Year), "-", max(rq2_raw$Year), "\n")
+cat("Number of unique countries:", n_distinct(rq2_raw$Country), "\n")
+```
+
+### 2.2 Missing Data Assessment
+
+```{r missing-data}
+# Check for missing values in key variables
+missing_summary <- rq2_raw %>%
+  summarise(
+    n_total = n(),
+    missing_sustainability = sum(is.na(Sustainability)),
+    missing_gini = sum(is.na(Gini)),
+    missing_gdp = sum(is.na(GDP)),
+    missing_any = sum(is.na(Sustainability) | is.na(Gini) | is.na(GDP))
+  )
+
+kable(missing_summary, 
+      caption = "Missing Data Summary for Key Variables",
+      col.names = c("Total Obs", "Missing Sustainability", "Missing Gini", 
+                    "Missing GDP", "Missing Any Variable"))
+```
+
+**Missing data handling:**
+
+After merging the three datasets by Country and Year, we have 269 observations with complete data on all three key variables. No additional observations were excluded due to missing values in Sustainability, Gini, or GDP because the inner join operation already filtered to cases with complete information.
+
+### 2.3 Variable Transformation
+
+```{r create-variables}
+# Create ordinal factor for sustainability (required for ordinal regression)
+# Original scale: 1-6, but our data ranges 2-4
+rq2_data <- rq2_raw %>%
+  mutate(
+    # Convert sustainability to ordered factor
+    Sustainability_ord = factor(Sustainability, 
+                                ordered = TRUE,
+                                levels = sort(unique(Sustainability))),
+    # Create log GDP
+    log_GDP = log(GDP)
+  ) %>%
+  filter(
+    !is.na(Sustainability),
+    !is.na(Gini),
+    !is.na(GDP),
+    is.finite(log_GDP)
+  )
+
+cat("Final analytical dataset: N =", nrow(rq2_data), "\n")
+cat("Sustainability levels present:", levels(rq2_data$Sustainability_ord), "\n")
+cat("Number of observations per sustainability level:\n")
+table(rq2_data$Sustainability_ord)
+```
+
+**Variable descriptions:**
+
+-   **Sustainability_ord**: Ordered categorical outcome variable with levels. Higher values indicate stronger environmental policy and institutional performance.
+
+-   **Gini**: Income inequality index (0-100 scale, higher = more unequal)
+
+-   **log_GDP**: Natural logarithm of GDP per capita (PPP). Transformation justified below based on model diagnostics.
+
+-   **Year**: Year of observation (included as categorical control for temporal differences)
+
+## 3. Model Selection and Justification
+
+### Why Ordinal Logistic Regression?
+
+The outcome variable, CPIA Sustainability Rating, is:
+
+1.  **Ordinal**: Categories have a natural ordering (2 \< 2.5 \< 3 \< 3.5 \< 4)
+2.  **Discrete**: Takes on only specific values, not continuous
+3.  **Limited range**: Bounded scale (theoretically 1-6, observed 2-4 in our data)
+
+**Ordinal logistic regression (proportional odds model)** is appropriate because:
+
+-   It respects the ordered nature of the outcome
+-   It uses the full information in the ordering (unlike treating as nominal categories)
+-   It provides interpretable coefficients as log-odds ratios
+
+**Model specification:**
+
+We fit a cumulative logit model:
+
+$$\text{logit}[P(Y \leq j)] = \alpha_j - \beta_1 \cdot \text{Gini} - \beta_2 \cdot \log(\text{GDP}) - \gamma_{\text{Year}}$$
+
+where $j$ indexes the sustainability rating categories, $\alpha_j$ are category-specific intercepts, and negative signs indicate that higher predictor values increase the odds of being in higher sustainability categories.
+
+## 4. GDP Transformation Decision
+
+For economic variables like GDP per capita, log transformation is standard practice in econometric modeling for several substantive reasons:
+
+1. **Economic interpretation**: A one-unit increase in log(GDP) corresponds to a proportional (percentage) change in actual GDP, which is more meaningful than absolute dollar changes. A \$1,000 increase means more to a poor country than a rich one.
+
+2. **Right-skewed distribution**: GDP per capita has extreme right skew across countries (ranging from \~\$800 to \~\$23,000 in our data). Log transformation compresses this range and makes the distribution more symmetric.
+
+3. **Multiplicative relationships**: The relationship between income and development outcomes is typically multiplicative rather than additive - going from \$1,000 to \$2,000 GDP has a different impact than \$20,000 to \$21,000.
+
+```{r gdp-distribution}
+# Show distribution of GDP before and after transformation
+par(mfrow = c(1, 2))
+hist(rq2_data$GDP, 
+     main = "Distribution of GDP per capita",
+     xlab = "GDP per capita (PPP)",
+     breaks = 20,
+     col = "lightblue")
+
+hist(rq2_data$log_GDP, 
+     main = "Distribution of log(GDP per capita)",
+     xlab = "log(GDP per capita)",
+     breaks = 20,
+     col = "lightgreen")
+```
+
+## 5. Ordinal Logistic Regression Model
+
+### 5.1 Model Covariates
+
+**Primary independent variables (research question focus):**
+
+1.  **Gini index**: Income inequality measure (0-100 scale, higher = more unequal). This is the main predictor of interest for examining whether inequality relates to sustainability performance.
+
+2.  **log(GDP per capita, PPP)**: Economic development indicator, log-transformed. This is the primary confounding variable that must be controlled, as both inequality and sustainability may be driven by overall wealth levels.
+
+**Control variables:**
+
+3.  **Year fixed effects**: Categorical variables for each year (2005-2022) to control for:
+    -   Global temporal shocks affecting all countries in a given year
+    -   Changes in World Bank CPIA assessment standards over time
+    -   International trends in environmental policy and awareness
+
+**Variables NOT included but potentially relevant:**
+
+The following confounders are not controlled due to data limitations but could influence the inequality-sustainability relationship:
+
+-   Governance quality and political regime type
+
+-   Natural resource dependence
+
+-   Geographic and climate factors
+
+-   Population characteristics (density, urbanization)
+
+-   Educational attainment and human capital
+
+The absence of these controls means the estimated associations between Gini, GDP, and sustainability may be confounded by unmeasured factors.
+
+### 5.2 Model Fitting
+
+```{r fit-ordinal-model}
+# Fit ordinal logistic regression (proportional odds model)
+ordinal_model <- polr(
+  Sustainability_ord ~ Gini + log_GDP + factor(Year),
+  data = rq2_data,
+  Hess = TRUE  # compute Hessian for standard errors
+)
+
+# Model summary
+summary(ordinal_model)
+```
+
+### 5.2.1 Coefficient Table with Confidence Intervals
+
+```{r coefficient-table}
+# Extract coefficients and compute confidence intervals
+coef_table <- broom::tidy(ordinal_model, conf.int = TRUE, exponentiate = FALSE)
+
+# Show what columns we actually have
+print("Available columns:")
+print(names(coef_table))
+
+# Filter to only coefficients (not intercepts)
+coef_table <- coef_table %>%
+  filter(coef.type == "coefficient")
+
+# Display the table with all available columns
+kable(coef_table, 
+      digits = 4,
+      caption = "Ordinal Logistic Regression Coefficients (Log-Odds Scale)")
+```
+
+### 5.2.2 Odds Ratios (Exponentiated Coefficients)
+
+```{r odds-ratios}
+# Compute odds ratios
+or_table <- broom::tidy(ordinal_model, conf.int = TRUE, exponentiate = TRUE) %>%
+  filter(coef.type == "coefficient")
+
+kable(or_table, 
+      digits = 3,
+      caption = "Ordinal Logistic Regression: Proportional Odds Ratios")
+```
+
+**Interpretation of Odds Ratios:**
+
+-   **Gini coefficient**: An odds ratio \> 1 indicates that higher inequality is associated with increased odds of being in a higher sustainability category
+-   **log_GDP coefficient**: An odds ratio \> 1 indicates that higher GDP is associated with increased odds of being in a higher sustainability category
+-   Year coefficients control for temporal variation in reporting standards
+
+### 5.2.3 Full Model Output with Intercepts 
+
+```{r full-model-output}
+# Display complete model output including threshold parameters
+cat("Complete Ordinal Logistic Regression Output\n")
+cat("Coefficients (log-odds):\n")
+print(coef(summary(ordinal_model)))
+
+cat("\n\nThreshold parameters (intercepts for cumulative logits):\n")
+print(ordinal_model$zeta)
+
+cat("\n\nModel fit statistics:\n")
+cat("AIC:", AIC(ordinal_model), "\n")
+cat("Residual deviance:", deviance(ordinal_model), "\n")
+cat("Degrees of freedom:", ordinal_model$df.residual, "\n")
+```
+
+```{r coefficient-comparison, fig.width=8, fig.height=5}
+# Create coefficient comparison plot
+coef_data <- data.frame(
+  Variable = c("Gini Index\n(per 10 points)", "log(GDP)\n(per unit)"),
+  Coefficient = c(0.074 * 10, 0.841),  # Scale Gini to 10-point change
+  Lower = c(0.0428 * 10, 0.4858),
+  Upper = c(0.1053 * 10, 1.2041)
+)
+
+ggplot(coef_data, aes(x = Variable, y = Coefficient)) +
+  geom_point(size = 4) +
+  geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, linewidth = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Coefficient Estimates with 95% Confidence Intervals",
+       subtitle = "Effect on log-odds of higher sustainability category",
+       y = "Coefficient (log-odds scale)",
+       x = "") +
+  theme_minimal() +
+  coord_flip()
+
+```
+
+### 5.2.3 Model Fit Statistics Evaluation
+
+```{r model-fit-statistics}
+# Extract and display model fit statistics
+cat("Model Fit Statistics\n")
+
+cat("Residual Deviance:", deviance(ordinal_model), "\n")
+cat("AIC:", AIC(ordinal_model), "\n")
+cat("Number of parameters:", length(coef(ordinal_model)) + length(ordinal_model$zeta), "\n")
+cat("Number of observations:", nobs(ordinal_model), "\n")
+cat("Degrees of freedom:", ordinal_model$df.residual, "\n\n")
+
+# Compare to null model (intercepts only)
+null_model <- polr(Sustainability_ord ~ 1, data = rq2_data, Hess = TRUE)
+
+cat("Null Model (intercepts only):\n")
+cat("  Deviance:", deviance(null_model), "\n")
+cat("  AIC:", AIC(null_model), "\n\n")
+
+# Likelihood ratio test
+lr_stat <- deviance(null_model) - deviance(ordinal_model)
+df_diff <- null_model$df.residual - ordinal_model$df.residual
+p_value <- pchisq(lr_stat, df = df_diff, lower.tail = FALSE)
+
+cat("Likelihood Ratio Test (Full vs Null Model):\n")
+cat("  Chi-square statistic:", round(lr_stat, 2), "\n")
+cat("  Degrees of freedom:", df_diff, "\n")
+cat("  p-value:", format.pval(p_value), "\n\n")
+
+if (p_value < 0.001) {
+  cat("Conclusion: The full model provides significantly better fit than the null model (p < 0.001).\n")
+} else {
+  cat("Conclusion: The full model fit compared to null model, p =", round(p_value, 4), "\n")
+}
+
+# Pseudo R-squared (McFadden's)
+pseudo_r2 <- 1 - (deviance(ordinal_model) / deviance(null_model))
+cat("\nMcFadden's Pseudo R²:", round(pseudo_r2, 3), "\n")
+cat("Interpretation: The model explains approximately", 
+    round(pseudo_r2 * 100, 1), 
+    "% of the deviance in sustainability ratings.\n")
+
+```
+
+### 5.3 Interpretation of Model Results
+
+**1. Gini Index (Income Inequality)**
+
+-   **Log-odds coefficient**: 0.074 (SE = 0.016, p \< 0.001)
+-   **Odds ratio**: 1.076 (95% CI: 1.044 - 1.111)
+-   **Interpretation**: For every 1-point increase in the Gini index, the odds of being in a higher sustainability category increase by approximately 7.6%, holding GDP and year constant.
+-   **Substantive effect**: A 10-point increase in inequality (e.g., from Gini = 30 to 40) is associated with a 2.09× increase in the odds of higher sustainability ratings (1.076\^10 ≈ 2.09).
+-   **Statistical significance**: This effect is highly statistically significant (p \< 0.001), with a confidence interval that excludes 1.0.
+
+**2. log(GDP per capita)**
+
+-   **Log-odds coefficient**: 0.841 (SE = 0.183, p \< 0.001)
+-   **Odds ratio**: 2.319 (95% CI: 1.625 - 3.334)
+-   **Interpretation**: A one-unit increase in log(GDP)—roughly equivalent to a 2.7× multiplication in actual GDP per capita—increases the odds of being in a higher sustainability category by 132% (more than doubling).
+-   **Substantive effect**: This is a strong effect. For example, comparing a country at \$2,000 GDP per capita to one at \$10,000 (log difference ≈ 1.61) corresponds to approximately 3.8× higher odds of better sustainability ratings.
+-   **Statistical significance**: Highly significant (p \< 0.001), with GDP showing a stronger effect size than inequality.
+
+**3. Year Fixed Effects**
+
+-   Most year coefficients are **not statistically significant** (p \> 0.05)
+-   Year coefficients range from -0.50 to 1.28, but confidence intervals are wide and include zero
+-   **Interpretation**: After controlling for inequality and GDP, there are no strong consistent temporal trends in sustainability ratings. This suggests:
+    -   Assessment criteria remained relatively stable over time
+    -   Country-level changes in inequality and GDP capture most of the variation
+    -   The model appropriately controls for any year-specific shocks
+
+**4. Threshold Parameters (Intercepts)**
+
+The model estimates five thresholds separating the sustainability categories: - 2\|2.5: 5.65 - 2.5\|3: 7.86 - 3\|3.5: 9.83 - 3.5\|4: 11.98 - 4\|4.5: 15.78
+
+These increasing values indicate that higher sustainability categories require progressively higher combinations of inequality, GDP, and year effects.
+
+**5. Model Fit Statistics:**
+
+The full model's AIC (731.38) is lower than the null model's AIC (737.03), confirming improved fit. Lower AIC indicates better balance between model complexity and goodness of fit. In other words, the full model provides a statistically significant improvement over a null model containing only intercepts (likelihood ratio test: χ² = 43.65, df = 19, p = 0.001), confirming that inequality, GDP, and year effects collectively explain meaningful variation in sustainability ratings. McFadden's pseudo R² of 0.06 indicates the model explains approximately 6% of the deviance in sustainability outcomes. While this appears modest, it is typical for cross-national institutional data where outcomes reflect complex, subjective expert assessments influenced by many unmeasured country-specific factors (governance quality, political stability, historical legacies). For the purposes of this analysis—testing whether inequality and GDP are associated with sustainability ratings rather than building a predictive model—the highly significant coefficients (p \< 0.001) and successful identification of systematic relationships are more important than overall variance explained. The model achieves its objective of identifying meaningful associations between economic inequality, development, and environmental institutional performance.
+
+### 5.4 Overall Model Assessment
+
+**Direction of Effects:**
+
+Contrary to common expectations, **higher income inequality is associated with higher sustainability ratings**, not lower ones. However, **GDP per capita has a much stronger positive association** than inequality.
+
+**Effect Size Comparison:**
+
+To put the effects in perspective: - A 10-point increase in Gini (substantial inequality change) → 2.09× higher odds - A doubling of GDP per capita (log increase ≈ 0.69) → 1.87× higher odds\
+- A tripling of GDP per capita (log increase ≈ 1.10) → 2.54× higher odds
+
+**Economic development appears to be a stronger driver of sustainability ratings than inequality.**
+
+**Statistical Strength:**
+
+Both Gini and log_GDP are highly significant predictors (t-values \> 4.5), indicating robust associations that are unlikely due to chance. The model correctly identifies systematic patterns in the data.
+
+### 5.4.1 Further Interpretation
+
+**Why might inequality be positively associated with sustainability?**
+
+This counterintuitive finding could reflect several mechanisms:
+
+1.  **Selection bias**: CPIA ratings only cover IDA-eligible (low/lower-middle income) countries. Within this restricted sample, countries with slightly higher inequality may also have more developed private sectors or urban centers that can support environmental institutions.
+
+2.  **Governance capacity**: Countries that can measure and report inequality may have stronger statistical and governance systems overall, which also support better environmental institutional performance.
+
+3.  **Economic structure**: Higher inequality might correlate with economic diversification away from subsistence agriculture toward manufacturing or services, which could be associated with better environmental policy frameworks.
+
+4.  **Reverse causality**: Countries investing in environmental institutions might experience economic changes that temporarily increase measured inequality.
+
+5.  **Unmeasured confounding**: The positive association may be spurious, driven by variables not included in the model (e.g., urbanization, political regime type, donor relationships).
+
+**GDP remains the dominant factor:**
+
+Regardless of the mechanism behind the inequality effect, **economic development (GDP per capita) shows a consistently stronger association with sustainability ratings**. A country's wealth appears more important than its wealth distribution for predicting environmental institutional strength, at least within the sample of low- and lower-middle-income countries covered by CPIA.
+
+### 5.4.2 Limitations of Interpretation
+
+1.  **Association, not causation**: This model identifies correlations but cannot determine whether inequality or GDP causally affect sustainability ratings.
+
+2.  **Restricted sample**: Results apply only to IDA-eligible countries and may not generalize to high-income nations.
+
+3.  **Measurement issues**:
+
+    -   CPIA ratings are subjective expert assessments
+    -   Gini coefficients may not be fully comparable across countries
+    -   Both inequality and sustainability are measured with error
+
+4.  **Omitted variables**: Many potentially important factors are not controlled (governance quality, natural resources, political regime, etc.).
+
+5.  **Temporal structure**: The unbalanced panel and insignificant year effects suggest limited ability to capture dynamic relationships.
+
+```{r bivariate-plots, fig.width=10, fig.height=5}
+library(ggplot2)
+library(gridExtra)
+
+# Gini vs Sustainability
+p1 <- ggplot(rq2_data, aes(x = Gini, y = as.numeric(Sustainability_ord))) +
+  geom_jitter(alpha = 0.5, height = 0.1, width = 0) +
+  geom_smooth(method = "lm", color = "blue", se = TRUE) +
+  labs(x = "Gini Index (Income Inequality)",
+       y = "Sustainability Rating",
+       title = "Sustainability vs. Income Inequality") +
+  theme_minimal()
+
+# GDP vs Sustainability  
+p2 <- ggplot(rq2_data, aes(x = log_GDP, y = as.numeric(Sustainability_ord))) +
+  geom_jitter(alpha = 0.5, height = 0.1, width = 0) +
+  geom_smooth(method = "lm", color = "blue", se = TRUE) +
+  labs(x = "log(GDP per capita, PPP)",
+       y = "Sustainability Rating",
+       title = "Sustainability vs. Economic Development") +
+  theme_minimal()
+
+grid.arrange(p1, p2, ncol = 2)
+
+```
+
+**Sustainability vs. Income Inequality (Left):**
+Both higher and lower inequality countries cluster around sustainability ratings of 3.0-4.0, with the fitted line showing a slight positive trend. The wide scatter around the line suggests that inequality alone explains only a small portion of variation in sustainability performance, though the positive slope indicates that countries with higher Gini indices tend to have marginally higher ratings.
+
+**Sustainability vs. Economic Development (Right):**
+Countries with higher GDP per capita clearly cluster at higher sustainability ratings, with the steepest concentration of points shifting upward as log(GDP) increases. The positive relationship is stronger and more consistent than with inequality, indicating that wealthier countries systematically achieve better environmental institutional performance regardless of other factors.
+
+```{r distribution-by-category, fig.width=10, fig.height=5}
+# Gini by sustainability category
+p1 <- ggplot(rq2_data, aes(x = Sustainability_ord, y = Gini, fill = Sustainability_ord)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  scale_fill_brewer(palette = "RdYlGn", direction = 1) +
+  labs(x = "Sustainability Rating",
+       y = "Gini Index",
+       title = "Income Inequality by Sustainability Category") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold"))
+
+# GDP by sustainability category
+p2 <- ggplot(rq2_data, aes(x = Sustainability_ord, y = log_GDP, fill = Sustainability_ord)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(alpha = 0.2, width = 0.2) +
+  scale_fill_brewer(palette = "RdYlGn", direction = 1) +
+  labs(x = "Sustainability Rating",
+       y = "log(GDP per capita, PPP)",
+       title = "Economic Development by Sustainability Category") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold"))
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+**Income Inequality by Sustainability Category (Left):**
+The median Gini index increases slightly from lower to higher sustainability categories (approximately 35 to 38), with substantial overlap in the distributions. The wide spread within each category and extensive overlap between adjacent categories indicates that inequality varies considerably among countries with similar sustainability ratings, reinforcing that inequality is a weak predictor on its own.
+
+**Economic Development by Sustainability Category (Right):**
+Clear separation exists between sustainability categories, with median log(GDP) increasing steadily from about 8.0 (rating 2.0) to 9.1 (rating 4.0). The relatively distinct boxplot positions with less overlap compared to the Gini plot demonstrate that GDP is a stronger differentiator of sustainability performance, with higher-rated countries consistently having higher economic development levels.
+
+## 6. Model Diagnostics
+
+### 6.1 Proportional Odds Assumption
+
+The proportional odds model assumes that the relationship between predictors and the outcome is the same across all threshold levels (i.e., the slopes don't vary by which category you're comparing). This is a key assumption to verify.
+
+```{r proportional-odds-test}
+# Fit separate binary logistic regressions for each threshold
+# to check if slopes are similar (informal test)
+
+# We'll create binary outcomes for each possible cutpoint
+cutpoints <- levels(rq2_data$Sustainability_ord)[-length(levels(rq2_data$Sustainability_ord))]
+
+cat("Testing proportional odds assumption by fitting separate models at each threshold:\n\n")
+
+# Store coefficients for comparison
+coef_comparison <- data.frame()
+
+for (cutpoint in cutpoints) {
+  # Create binary outcome: <= cutpoint vs > cutpoint
+  rq2_data <- rq2_data %>%
+    mutate(binary_outcome = as.numeric(Sustainability_ord > cutpoint))
+  
+  # Fit binary logistic regression
+  binary_model <- glm(binary_outcome ~ Gini + log_GDP + factor(Year),
+                      data = rq2_data,
+                      family = binomial())
+  
+  # Extract coefficients for Gini and log_GDP only
+  coefs <- coef(binary_model)[c("Gini", "log_GDP")]
+  
+  coef_comparison <- rbind(coef_comparison, 
+                          data.frame(cutpoint = cutpoint,
+                                    predictor = names(coefs),
+                                    coefficient = coefs))
+}
+
+# Reshape for easier viewing
+coef_wide <- coef_comparison %>%
+  pivot_wider(names_from = predictor, values_from = coefficient)
+
+kable(coef_wide, 
+      digits = 3,
+      caption = "Coefficients at Each Threshold (Proportional Odds Check)")
+
+cat("\nIf proportional odds assumption holds, coefficients should be similar across thresholds.\n")
+```
+
+### 6.1.1 Proportional Odds Analysis
+
+**Assessment of Gini coefficient stability:**
+
+- Gini coefficients range from -0.011 to 0.121
+- Most thresholds show positive coefficients (0.032, 0.102, 0.121, 0.012)
+- One threshold (3.5) shows a small negative coefficient (-0.011)
+- **Range**: 0.132 units across thresholds
+- **Conclusion**: Moderately consistent, though some variation exists
+
+**Assessment of log_GDP coefficient stability:**
+
+- log_GDP coefficients range from 0.631 to 2.355
+- All coefficients are positive
+- **Range**: 1.724 units (substantial variation)
+- The highest threshold (4.0→4.5) shows a much larger effect (2.355) than middle thresholds
+- **Conclusion**: More variation than desired for perfect proportional odds
+
+**Overall Assessment:**
+
+The proportional odds assumption is **partially satisfied**:
+
+1. **Direction consistency**: Both predictors maintain their direction (positive) across nearly all thresholds
+2. **Magnitude variation**: Coefficients vary in magnitude, particularly for log_GDP
+3. **Practical implications**: The variation in coefficients suggests the relationship isn't perfectly uniform. However, the consistent direction and relatively similar magnitudes for most thresholds suggest the model is reasonable. The variation is not extreme enough to invalidate the model
+
+**Statistical note:** With only 269 observations and 5 categories, the threshold-specific binary models have limited sample sizes (especially at extreme categories), which increases uncertainty in these coefficient estimates. The observed variation may partly reflect sampling variability rather than true violations of proportional odds.
+
+**Decision:** We proceed with the proportional odds model because:
+- It provides a summary of the overall relationship
+- The assumption violations are not severe
+- The main conclusions about positive associations hold across thresholds
+
+### 6.2 Residual Analysis
+
+For ordinal logistic regression, traditional residual plots are less informative, but we can examine:
+
+```{r residual-analysis}
+# Calculate predicted probabilities for each category
+predicted_probs <- predict(ordinal_model, type = "probs")
+
+# Calculate most likely predicted category
+predicted_class <- predict(ordinal_model, type = "class")
+
+# Create confusion matrix
+confusion_matrix <- table(Observed = rq2_data$Sustainability_ord, 
+                          Predicted = predicted_class)
+
+cat("Confusion Matrix:\n")
+print(confusion_matrix)
+
+# Calculate accuracy
+accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+cat("\nOverall classification accuracy:", round(accuracy, 3), "\n")
+
+# Show distribution of predicted vs observed
+cat("\nDistribution of observed sustainability ratings:\n")
+print(table(rq2_data$Sustainability_ord))
+
+cat("\nDistribution of predicted sustainability ratings:\n")
+print(table(predicted_class))
+```
+
+### 6.2.1 Model Classification Performance
+
+The confusion matrix shows the model achieves 45% overall classification accuracy. The model performs best at predicting the middle sustainability categories (3.0 and 3.5), which are also the most common in the data, achieving 51% and 71% accuracy respectively. The model rarely predicts extreme categories (2.0, 4.0, 4.5) due to their rarity in the dataset.
+
+```{r ordinal-accuracy}
+# Calculate ordinal closeness of predictions
+obs_numeric <- as.numeric(rq2_data$Sustainability_ord)
+pred_numeric <- as.numeric(predicted_class)
+
+within_1 <- mean(abs(obs_numeric - pred_numeric) <= 1)
+
+cat("Predictions within 1 category of actual:", round(within_1, 3), "\n")
+```
+
+When predictions are incorrect, they are typically off by only one category, indicating the model captures the approximate ordering of countries well. For the purpose of understanding relationships between inequality, GDP, and sustainability (rather than precise prediction), this performance is adequate.
+
+### 6.3 High Leverage Points and Influence
+
+```{r show-large-residuals}
+# Calculate response residuals
+obs_numeric <- as.numeric(rq2_data$Sustainability_ord)
+pred_numeric <- as.numeric(predicted_class)
+residuals_response <- obs_numeric - pred_numeric
+
+# Identify large residuals
+large_residuals <- which(abs(residuals_response) >= 1.5)
+
+cat("Number of observations with large prediction errors (|residual| >= 1.5 categories):", 
+    length(large_residuals), "\n\n")
+
+if (length(large_residuals) > 0) {
+  # Create table of influential observations
+  influential_obs <- rq2_data[large_residuals, c("Country", "Year", "Sustainability", "Gini", "GDP")]
+  influential_obs$Predicted <- as.character(predicted_class[large_residuals])
+  influential_obs$Observed <- as.character(rq2_data$Sustainability_ord[large_residuals])
+  influential_obs$Residual <- round(residuals_response[large_residuals], 2)
+  
+  print(kable(influential_obs, 
+              caption = "Countries with Large Prediction Errors (|residual| >= 1.5 categories)",
+              row.names = FALSE))
+} else {
+  cat("No observations with unusually large residuals detected.\n")
+}
+```
+
+```{r coefficient-stability-check}
+# Refit model without high-residual observations
+if (length(large_residuals) > 0) {
+  cat("Refitting model without", length(large_residuals), "high-residual observations...\n\n")
+  
+  rq2_data_reduced <- rq2_data[-large_residuals, ]
+  
+  ordinal_model_reduced <- polr(
+    Sustainability_ord ~ Gini + log_GDP + factor(Year),
+    data = rq2_data_reduced,
+    Hess = TRUE
+  )
+  
+  # Compare coefficients
+  coef_original <- coef(ordinal_model)[c("Gini", "log_GDP")]
+  coef_reduced <- coef(ordinal_model_reduced)[c("Gini", "log_GDP")]
+  
+  comparison <- data.frame(
+    Predictor = c("Gini", "log_GDP"),
+    Full_Model = round(coef_original, 4),
+    Reduced_Model = round(coef_reduced, 4),
+    Difference = round(coef_original - coef_reduced, 4),
+    Pct_Change = round(100 * abs(coef_original - coef_reduced) / abs(coef_original), 2)
+  )
+  
+  print(kable(comparison, 
+              caption = "Coefficient Stability Analysis: Full vs Reduced Model",
+              row.names = FALSE))
+  
+  # Interpretation
+  max_pct_change <- max(comparison$Pct_Change)
+  
+  cat("\n")
+  if (max_pct_change < 10) {
+    cat("Conclusion: Maximum coefficient change is", max_pct_change, 
+        "%. The model is highly robust to these observations.\n")
+  } else if (max_pct_change < 20) {
+    cat("Conclusion: Maximum coefficient change is", max_pct_change, 
+        "%. The model is reasonably robust to these observations.\n")
+  } else {
+    cat("Conclusion: Maximum coefficient change is", max_pct_change, 
+        "%. Some sensitivity to influential observations exists, but main conclusions remain valid.\n")
+  }
+}
+```
+
+### 6.3.1 High Leverage Points and Influence Analysis
+
+**Observations with large prediction errors:** Twenty-three country-year observations (9% of the sample) have prediction errors of 1.5 categories or larger. These include:
+
+-   **Countries with higher-than-predicted sustainability**: Ethiopia, Madagascar, Moldova (multiple years), Uganda, Bhutan, Lao PDR - all rated 4.0 but predicted as 3.0 or 3.5
+-   **Countries with lower-than-predicted sustainability**: Myanmar, Sri Lanka, Sudan (multiple years), Timor-Leste, Djibouti, Kyrgyz Republic - rated 2.0 or 2.5 but predicted as 3.5
+-   Papua New Guinea stands out with a 3-category error (observed 2.0, predicted 3.5)
+
+**Coefficient stability analysis:**
+
+When refitting the model without these 23 observations:
+
+-   **Gini coefficient**: 0.0736 → 0.1088 (48% increase)
+-   **log_GDP coefficient**: 0.8411 → 1.1345 (35% increase)
+
+**Interpretation:**
+
+Both coefficients increase by 35-48% when high-residual observations are removed, indicating **moderate sensitivity** to these outliers. However, the key findings remain unchanged:
+
+1.  **Direction is stable**: Both inequality and GDP remain positively associated with sustainability in both models
+2.  **Statistical significance preserved**: Both effects remain highly significant (p \< 0.001) in the reduced model
+3.  **Relative magnitude unchanged**: GDP continues to show a stronger effect than inequality
+
+**Why the sensitivity?**
+
+The 23 outlier countries appear to fall into two groups:
+
+1.  **Over-performers**: Countries like Moldova and Ethiopia have higher sustainability ratings than their inequality/GDP levels would predict, potentially due to strong governance, donor support, or recent reform efforts
+2.  **Under-performers**: Countries like Sudan, Myanmar, and Timor-Leste have lower ratings despite moderate economic indicators, possibly due to conflict, weak institutions, or political instability
+
+These outliers slightly **weaken** the estimated effects in the full model. Removing them strengthens the associations but does not change the substantive conclusions.
+
+**Conclusion:**
+
+While the model shows moderate sensitivity to influential observations (35-48% coefficient changes), the main research findings are robust: both income inequality and GDP per capita are positively associated with environmental sustainability ratings, with GDP showing the stronger effect. The presence of outliers does not invalidate these conclusions.
+
+### 6.4 Multicollinearity Assessment
+
+```{r multicollinearity-check}
+library(car)
+
+# Calculate VIF using linear approximation
+lm_vif_check <- lm(as.numeric(Sustainability_ord) ~ Gini + log_GDP + factor(Year), 
+                   data = rq2_data)
+
+cat("Variance Inflation Factors (VIF):\n")
+
+# Get VIF - this returns a mix of numbers and matrices
+vif_all <- vif(lm_vif_check)
+
+cat("Continuous Predictors:\n")
+print(vif_all)
+
+cat("\n\nInterpretation:\n")
+
+# For continuous predictors, VIF values will be shown above
+# Manually check the output:
+# - If Gini and log_GDP both show values < 5, no multicollinearity concern
+# - If either is 5-10, moderate multicollinearity  
+# - If either is > 10, high multicollinearity
+
+cat("Guidelines:\n")
+cat("VIF < 5: No multicollinearity concern\n")
+cat("VIF 5-10: Moderate multicollinearity\n")
+cat("VIF > 10: High multicollinearity\n")
+cat("\nNote: High GVIF for factor(Year) is expected and acceptable for categorical variables with many levels.\n")
+```
+
+### 6.4.1 Multicollinearity Evalutation Analysis
+
+Variance Inflation Factors (VIF) were calculated to assess multicollinearity among predictors. VIF values measure how much the variance of a coefficient is inflated due to correlation with other predictors.
+
+All VIF values for continuous predictors are well below the conventional threshold of 5, indicating no multicollinearity concerns. The low VIF values (around 1.1-1.2) suggest that Gini and log(GDP) are nearly orthogonal, meaning they capture distinct aspects of country characteristics with minimal overlap.
+
+## 7. Limitations and Next Steps
+
+### 7.1 Analysis Limitations
+
+1.  **Moderate sample size and power**: With N = 269 country-year observations from 74 countries, statistical power is adequate for detecting the main effects of inequality and GDP but limited for complex interactions or subgroup analyses.
+
+2.  **Unbalanced panel structure**: Not all countries contribute data for all years between 2005-2022. This unbalanced structure may create selection bias if countries with stronger institutional capacity are more likely to report consistently.
+
+3.  **Restricted sample generalizability**: CPIA sustainability ratings are only available for low-income and lower-middle-income countries eligible for IDA (International Development Association) financing. Findings cannot be generalized to high-income or upper-middle-income countries, where inequality-sustainability relationships may differ substantially.
+
+4.  **Unmeasured confounding variables**: Many factors that influence environmental institutional performance are not controlled in this analysis:
+
+    -   Political regime type and governance quality
+    -   Natural resource endowments and dependence on extractive industries
+    -   Geographic features and climate vulnerability
+    -   Historical colonial legacies and institutional development paths
+    -   Participation in international environmental agreements
+    -   Donor relationships and foreign aid dependence
+    -   Conflict and political stability
+    -   Urbanization and demographic structure
+
+5.  **Measurement limitations**:
+
+    -   CPIA ratings are subjective expert assessments by World Bank staff, not objective quantitative metrics
+    -   Gini coefficients may not be fully comparable across countries due to different data collection methods, definitions of income, and survey quality
+    -   GDP (PPP) adjustments rely on price indices that may not accurately capture living standards in low-income contexts
+    -   Both inequality and sustainability are measured with error, potentially attenuating estimated relationships
+
+6.  **Temporal considerations**: Countries are observed in different years, and while year fixed effects control for global temporal shocks, they may not fully capture country-specific time trends or the dynamic nature of institutional development.
+
+7.  **Causal inference limitations**: This analysis identifies associations between inequality, GDP, and sustainability ratings but cannot establish causal relationships. We cannot conclude that policies to change inequality or GDP would directly alter sustainability performance, as:
+
+    -   Reverse causality is possible (e.g., environmental policies affecting economic structure)
+    -   Omitted variables may confound all relationships
+    -   The observational design precludes causal interpretation
+
+8.  **Model sensitivity to outliers**: The analysis identified 23 country-year observations with large prediction errors. Removing these observations increases coefficient estimates by 35-48%, indicating moderate sensitivity. While main conclusions remain valid, some findings are influenced by specific outlier countries.
+
+### 
+
+### 7.2 Recommended Next Steps
+
+1.  **Use country fixed effects models**:
+
+    -   Instead of comparing across countries, analyze whether changes in inequality within the same country over time correspond to changes in that country's sustainability rating.
+    -   This would control for all unchanging country characteristics (geography, institutions, culture) and provide stronger evidence about whether inequality actually affects sustainability.
+
+2.  **Expand control variables to address confounding**:
+
+    -   Include governance quality indices (Polity, Freedom House, WGI)
+    -   Add natural resource dependence (% GDP from extractive industries)
+    -   Control for demographic factors (urbanization, population density)
+    -   Incorporate conflict indicators and political stability measures
+
+    These additions would reduce omitted variable bias and provide clearer estimates of the inequality-sustainability relationship.
+
+3.  **Robustness checks with alternative measures**:
+
+    -   Different inequality measures (top/bottom income share ratios, Palma ratio, Theil index)
+    -   Alternative sustainability outcomes (Environmental Performance Index, CO2 emissions intensity, deforestation rates)
+    -   Sensitivity analyses excluding influential observations
+
+## 8. Summary of Key Findings
+
+### Research Question and Approach
+
+We examined whether income inequality (Gini index) is related to environmental sustainability performance after controlling for economic development (GDP per capita), using an ordinal logistic regression model on 269 country-year observations from 74 low- and lower-middle-income countries (2005-2022).
+
+### Main Results
+
+Both income inequality and GDP per capita show statistically significant positive associations with CPIA sustainability ratings:
+
+-   **Gini coefficient**: 0.074 (p \< 0.001), odds ratio = 1.076
+-   **log_GDP coefficient**: 0.841 (p \< 0.001), odds ratio = 2.319
+
+A 10-point increase in the Gini index is associated with approximately 2.09× higher odds of being in a higher sustainability category, while a tripling of GDP per capita corresponds to 2.54× higher odds. **Economic development shows a stronger effect than inequality.**
+
+### Key Interpretation
+
+Contrary to expectations, **higher inequality is associated with higher sustainability ratings** within this sample of low-income countries. This counterintuitive finding may reflect sample restriction effects, unmeasured confounding (governance quality, donor relationships), or that inequality proxies for economic structural changes in developing economies.
+
+**GDP per capita emerges as the dominant predictor** of environmental institutional strength, suggesting that economic capacity matters more than wealth distribution for sustainability performance in IDA-eligible countries.
+
+### Limitations
+
+The model shows moderate sensitivity to outliers (35-48% coefficient changes when removing 23 high-residual observations) but main conclusions remain stable. These are associations, not causal effects, and findings apply only to low- and lower-middle-income countries. Many potential confounders (governance quality, natural resources, conflict) are unmeasured.
