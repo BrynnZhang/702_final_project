@@ -1,0 +1,648 @@
+---
+title: "Income Inequality, Economic Development, and Life Expectancy"
+author: "Brynn Zhang, Anvita Suresh, Matthew Fischer, Pinaki Ghosh"
+format:
+  pdf:
+    toc: false
+    number-sections: false
+execute:
+  echo: false
+  message: false
+  warning: false
+
+crossref:
+  fig-title: "Figure"
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(countrycode)
+library(car)
+library(lmtest)
+library(sandwich)
+```
+
+```{r}
+#| label: memo-prep
+#| include: false
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(countrycode)
+library(lmtest)
+library(sandwich)
+
+# --- READ DATA  ---
+gini <- read_csv("data/UNGini_clean.csv")
+gdp_raw <- read_csv("data/UNGDP.csv", show_col_types = FALSE)
+life_raw <- read_csv("data/UNLifeExp.csv", show_col_types = FALSE)
+
+# --- CLEAN + MERGE  ---
+gdp_clean <- gdp_raw %>%
+  filter(`Country or Area` %in% gini$Country) %>%
+  mutate(Year = as.integer(Year)) %>%
+  rename(Country = `Country or Area`, GDP = Value) %>%
+  select(Country, Year, GDP) %>%
+  filter(!is.na(GDP))
+
+life_clean <- life_raw %>%
+  filter(Variant == "Medium",
+         `Country or Area` %in% gini$Country,
+         `Year(s)` <= 2023) %>%
+  rename(Country = `Country or Area`, Year = `Year(s)`, LifeExp = Value) %>%
+  select(Country, Year, LifeExp) %>%
+  filter(!is.na(LifeExp))
+
+rq1_panel <- life_clean %>%
+  inner_join(gini, by = c("Country", "Year")) %>%
+  inner_join(gdp_clean, by = c("Country", "Year")) %>%
+  filter(!is.na(Gini), !is.na(GDP), !is.na(LifeExp))
+
+rq1_panel3 <- rq1_panel %>%
+  mutate(
+    log_GDP = log(GDP),
+    Year_f = factor(Year),
+    Region = countrycode(Country, "country.name", "region")
+  ) %>%
+  mutate(
+    Region = ifelse(grepl("Micronesia", Country, ignore.case = TRUE),
+                    "East Asia & Pacific", Region),
+    Region = ifelse(Country %in% c("Turkey", "Türkiye", "TÃ¼rkiye") & is.na(Region),
+                    "Europe & Central Asia", Region)
+  ) %>%
+  filter(!is.na(Region)) %>%
+  mutate(Region = factor(Region))
+
+```
+
+# Memo
+
+## 1. Stakeholder Context
+
+This memo is written for a **Regional Policy Advisor** working in an international development or global health organization.
+
+This role involves advising governments and program teams on **health and development priorities within specific world regions**, rather than setting global macroeconomic policy directly. While a regional advisor cannot single-handedly raise a country’s income level, they can influence **policy emphasis, aid allocation, and program design**, including whether to prioritize broad-based economic development initiatives or more targeted interventions aimed at reducing inequality.
+
+The purpose of this analysis is to clarify **when and where economic development versus income inequality matters most for population health**, as measured by life expectancy, so that regional policy recommendations can be appropriately targeted.
+
+## 2. Background and Motivation
+
+Life expectancy is a widely used indicator of population health and overall well-being. Prior research has consistently documented a strong positive association between national income levels and life expectancy, while the role of income inequality has been more contested and appears to depend on context (Deaton, 2003; Wilkinson & Pickett, 2009).
+
+Income inequality is commonly measured using the **Gini index**, where higher values indicate a more unequal distribution of income. In theory, inequality may affect health outcomes through unequal access to healthcare, nutrition, and public goods, but these mechanisms are likely to vary across regions depending on institutions, baseline income levels, and social safety nets.
+
+## 3. Research Question
+
+**How are income inequality (measured by the Gini index) and economic development (measured by GDP per capita) associated with life expectancy, and do these relationships differ across world regions?**
+
+## 4. Data and Analytical Approach 
+
+We combine United Nations data on life expectancy at birth, GDP per capita, and the Gini index in a country–year dataset. To ensure fair comparisons, countries are compared within the same year, accounting for global trends such as medical and technological progress.
+
+GDP per capita is analyzed on a logarithmic scale, which better reflects how changes in income relate to changes in life expectancy. We estimate both a baseline model that assumes common relationships across countries and an interaction model that allows these relationships to differ by world region.
+
+## 5. What We Found
+
+### 1. Economic development is strongly associated with life expectancy in all regions
+
+Across all regions, countries with higher GDP per capita tend to have longer life expectancy. Interpreted in practical terms, a **10% increase in GDP per capita** is associated with an increase in life expectancy of approximately **0.4 to 0.7 years**, depending on the region. This positive relationship is strongest in **South Asia** and the **Middle East & North Africa**, and remains substantial in every other region.
+
+The figure below illustrates that the relationship between economic development and life expectancy is consistently positive across regions, even though the strength of the association varies.
+
+```{r}
+ggplot(rq1_panel3, aes(x = log_GDP, y = LifeExp, color = Region)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "log(GDP per capita)",
+    y = "Life expectancy at birth (years)"
+  ) +
+  theme_minimal()
+
+```
+
+### **2. Income inequality shows little or no relationship with life expectancy in most regions**
+
+In contrast to economic development, **income inequality (measured by the Gini index)** shows little or no systematic relationship with life expectancy in most regions once differences in GDP per capita are taken into account. In regions such as **Europe & Central Asia**, **Latin America & the Caribbean**, and **North America**, changes in income inequality are not associated with meaningful changes in life expectancy.
+
+This suggests that, in these regions, broader economic conditions and institutional factors play a larger role in shaping population health outcomes than income distribution alone.
+
+The figure below illustrates this pattern, showing relatively flat or weak relationships between income inequality and life expectancy across most regions.
+
+```{r}
+#| echo: false
+#| fig-cap: "Relationship between income inequality (Gini index) and life expectancy across world regions."
+
+ggplot(rq1_panel3, aes(x = Gini, y = LifeExp, color = Region)) +
+geom_point(alpha = 0.25) +
+geom_smooth(method = "lm", se = FALSE) +
+labs(
+x = "Income inequality (Gini index)",
+y = "Life expectancy at birth (years)"
+) +
+theme_minimal()
+
+
+```
+
+### **3. Sub-Saharan Africa is a notable exception**
+
+Sub-Saharan Africa stands out as the region where income inequality is most strongly associated with lower life expectancy. In this region, higher values of the Gini index are associated with noticeable declines in life expectancy, even after accounting for differences in GDP per capita.
+
+This pattern aligns with expectations given the region’s lower average income levels, weaker social safety nets, and greater vulnerability to unequal access to healthcare, nutrition, and basic public services. In such contexts, income inequality may translate more directly into health disparities than in higher-income regions.
+
+## 6. Robustness and Confidence in the Results
+
+We assessed whether these findings depend on specific modeling choices or a small number of influential observations. Diagnostic checks indicate that the statistical models provide a reasonable fit to the data. While some country–year observations are influential—a common feature of global datasets—re-estimating the models after excluding these observations does not materially change the conclusions.
+
+In particular, the strong positive association between economic development and life expectancy remains, and the region-specific role of income inequality—especially in Sub-Saharan Africa—persists. This increases confidence that the results are not driven by a small number of extreme cases.
+
+## 7. Implications for Regional Policy Advisors
+
+For regional policy advisors, these findings suggest several practical implications:
+
+1.  Economic development is a central lever for improving population health across all regions
+2.  Income inequality is not a universal driver of life expectancy, but it appears particularly important in Sub-Saharan Africa, where unequal access to basic resources can have direct health consequences.
+3.  Policy priorities should be region-specific. In many regions, inequality-focused interventions alone may have limited impact on life expectancy unless
+    accompanied by broader development gains, whereas in Sub-Saharan Africa, reducing inequality may play a more meaningful role alongside growth-oriented strategies
+
+## 8. Limitations
+
+This analysis has several limitations. First, the results describe associations rather than causal effects; differences in life expectancy may reflect unobserved factors such as healthcare quality, conflict, or demographic structure that are not fully captured by GDP per capita or income inequality. Second, the Gini index and GDP measures may be measured with error or reported inconsistently across countries, particularly in lower-income regions. Third, the use of broad regional groupings may mask important within-region heterogeneity. Finally, the analysis focuses on national averages and does not capture subnational inequality or health disparities within countries.
+
+## **9. Closing Summary**
+
+In summary, economic development is consistently and strongly associated with higher life expectancy across all world regions, while the relationship between income inequality varies by context. These findings suggest that policies aimed at raising income levels are likely to yield broad health benefits globally, while inequality-focused interventions may be most relevant in specific regions such as Sub-Saharan Africa. For regional policy advisors, the results underscore the importance of tailoring health and development strategies to regional conditions rather than applying a single global approach.
+
+------------------------------------------------------------------------
+
+# Technical Appendix – RQ1
+
+## 1. Data Sources
+
+We use four data sources for this analysis. First, the **UN Gini index** provides standardized measures of income inequality across countries and years. Second, **GDP per capita** from the UN National Accounts dataset captures levels of economic development. Third, **life expectancy at birth** is used as a core indicator of national health outcomes. Finally, we classify all countries into broad **world regions (East Asia & Pacific, Europe & Central Asia, Latin America & Caribbean, Middle East & North Africa, North America, South Asia, Sub-Saharan Africa)** using the World Bank regional taxonomy implemented in the `countrycode` package. This region variable is required for the interaction model that evaluates whether the inequality–life expectancy relationship varies geographically.
+
+```{r}
+#| label: data-sources
+#| echo: false
+
+# Read UN Gini data (already cleaned by teammate)
+gini <- read_csv("data/UNGini_clean.csv", show_col_types = FALSE)
+
+# Read raw UN GDP per capita data
+gdp_raw <- read_csv("data/UNGDP.csv", show_col_types = FALSE)
+
+# Read raw UN life expectancy data
+life_raw <- read_csv("data/UNLifeExp.csv", show_col_types = FALSE)
+
+# Quick summary of row counts for the appendix
+data_sources_summary <- tibble::tibble(
+  dataset = c("Gini", "GDP", "Life expectancy"),
+  n_rows  = c(nrow(gini), nrow(gdp_raw), nrow(life_raw))
+)
+
+data_sources_summary
+
+```
+
+## 2. Data Cleaning
+
+We applied a consistent cleaning pipeline across all three UN datasets before merging them into a unified country–year panel. For GDP per capita, we retained only countries that appeared in the Gini dataset, standardized the year field, and removed rows with missing GDP values. For life expectancy, we restricted observations to the UN Medium projection variant (the baseline series used for international comparison), limited the data to observed years up to 2023, and dropped records with missing values. These steps ensure the three sources are aligned in temporal coverage and country definitions. We then merged the cleaned GDP, life expectancy, and Gini datasets by country and year to produce the analysis-ready panel shown below.
+
+```{r}
+
+# --- 1. Clean GDP per capita ---
+
+# Rows before cleaning
+gdp_rows_before <- nrow(gdp_raw)
+
+gdp_clean <- gdp_raw %>%
+  filter(`Country or Area` %in% gini$Country) %>%        # keeps only Gini countries
+  mutate(Year = as.integer(Year)) %>%
+  rename(
+    Country = `Country or Area`,
+    GDP     = Value
+  ) %>%
+  select(Country, Year, GDP)
+
+# Count missing GDP before dropping
+gdp_missing_summary <- gdp_clean %>%
+  summarise(
+    n_rows         = n(),
+    miss_GDP       = sum(is.na(GDP)),
+    rows_dropped_GDP = sum(is.na(GDP))
+  )
+
+# Drop missing GDP
+gdp_clean <- gdp_clean %>%
+  filter(!is.na(GDP))
+
+
+# --- 2. Clean life expectancy ---
+
+life_rows_before <- nrow(life_raw)
+
+life_clean <- life_raw %>%
+  filter(
+    Variant == "Medium",                              # baseline UN projection/estimate
+    `Country or Area` %in% gini$Country,             # matches Gini countries
+    `Year(s)` <= 2023                                # restricted to observed years
+  ) %>%
+  rename(
+    Country = `Country or Area`,
+    Year    = `Year(s)`,
+    LifeExp = Value
+  ) %>%
+  select(Country, Year, LifeExp)
+
+# Count missing LifeExp before dropping
+life_missing_summary <- life_clean %>%
+  summarise(
+    n_rows            = n(),
+    miss_LifeExp      = sum(is.na(LifeExp)),
+    rows_dropped_Life = sum(is.na(LifeExp))
+  )
+
+# Drop missing LifeExp
+life_clean <- life_clean %>%
+  filter(!is.na(LifeExp))
+
+
+# --- 3. Merge three sources into unified RQ1 panel ---
+
+rq1_panel <- life_clean %>%
+  inner_join(gini,      by = c("Country", "Year")) %>%
+  inner_join(gdp_clean, by = c("Country", "Year"))
+
+# Summary of merged panel (for sanity check)
+rq1_panel_summary <- rq1_panel %>%
+  summarise(
+    n_rows      = n(),
+    min_year    = min(Year),
+    max_year    = max(Year),
+    n_countries = dplyr::n_distinct(Country)
+  )
+
+# Combine missingness summaries for display in the appendix
+data_cleaning_missing_summary <- tibble::tibble(
+  dataset = c("GDP (cleaning step)", "Life expectancy (cleaning step)"),
+  n_rows_after_filters = c(gdp_missing_summary$n_rows, life_missing_summary$n_rows),
+  n_missing_dropped    = c(gdp_missing_summary$rows_dropped_GDP,
+                           life_missing_summary$rows_dropped_Life)
+)
+
+data_cleaning_missing_summary
+
+```
+
+## 3. Missingness
+
+After constructing the merged country–year panel, we examined missing values in the three key analysis variables: life expectancy, the Gini index, and GDP per capita. Reporting these counts ensures transparency about the completeness of the analytical dataset and clarifies how many observations are removed due to missingness rather than model restrictions.
+
+```{r}
+
+missing_panel <- rq1_panel %>%
+  summarise(
+    n_rows_total  = n(),
+    miss_LifeExp = sum(is.na(LifeExp)),
+    miss_Gini    = sum(is.na(Gini)),
+    miss_GDP     = sum(is.na(GDP))
+  )
+
+missing_panel
+
+# Drop missing values to obtain final analysis dataset
+rq1_panel <- rq1_panel %>%
+  filter(
+    !is.na(LifeExp),
+    !is.na(Gini),
+    !is.na(GDP)
+  )
+
+```
+
+## 4. GDP Transformation
+
+To select an appropriate functional form for GDP per capita, we compared models using raw GDP and log-transformed GDP and evaluated their residual plots. The model with raw GDP shows curvature and a fan-shaped pattern in the residuals, indicating violations of the linearity and constant-variance assumptions. After applying a log transformation, the residuals become more evenly scattered with a more stable spread. Because the log specification better satisfies the linearity and homoskedasticity assumptions, all subsequent models use log(GDP per capita) as the measure of economic development.
+
+```{r}
+
+#| label: gdp-transformation
+#| echo: false
+#| fig-cap: "Residuals for models using raw GDP (left) and log(GDP) (right)."
+
+# Create log-transformed GDP and a factor version of Year
+rq1_panel2 <- rq1_panel %>%
+  mutate(
+    log_GDP = log(GDP),
+    Year_f  = factor(Year)
+  )
+
+# Model using raw GDP
+model_raw_gdp <- lm(
+  LifeExp ~ Gini + GDP + Year_f,
+  data = rq1_panel2
+)
+
+# Model using log-transformed GDP
+model_log_gdp <- lm(
+  LifeExp ~ Gini + log_GDP + Year_f,
+  data = rq1_panel2
+)
+
+# Display residual plots side-by-side
+par(mfrow = c(1, 2))
+
+plot(
+  fitted(model_raw_gdp), resid(model_raw_gdp),
+  xlab = "Fitted values (raw GDP model)",
+  ylab = "Residuals",
+  main = "Raw GDP"
+)
+abline(h = 0, lty = 2)
+
+plot(
+  fitted(model_log_gdp), resid(model_log_gdp),
+  xlab = "Fitted values (log GDP model)",
+  ylab = "Residuals",
+  main = "log(GDP)"
+)
+abline(h = 0, lty = 2)
+
+par(mfrow = c(1, 1))
+
+# Store log-GDP model object for consistency in later sections
+model_panel_base <- model_log_gdp
+
+```
+
+## 5. Main Panel Model
+
+Our baseline model relates life expectancy to income inequality and economic development in a pooled country–year panel with year fixed effects. Specifically, we regress life expectancy on the Gini index and log(GDP per capita), including indicator variables for each year to absorb global shocks and common time trends. Because observations for a given country are repeated over time, we report robust standard errors clustered at the country level.
+
+```{r}
+
+#| label: main-panel-model
+#| echo: false
+
+# Linear panel model with year fixed effects
+model_panel_main <- lm(
+  LifeExp ~ Gini + log_GDP + Year_f,
+  data = rq1_panel2
+)
+
+# Cluster-robust SE at the country level
+vcov_country <- vcovCL(model_panel_main, cluster = ~ Country)
+panel_main_robust <- coeftest(model_panel_main, vcov = vcov_country)
+
+# Compact table for the key coefficients (intercept, Gini, log_GDP)
+panel_main_table <- data.frame(
+  term      = rownames(panel_main_robust),
+  estimate  = panel_main_robust[, 1],
+  std.error = panel_main_robust[, 2],
+  t.value   = panel_main_robust[, 3],
+  p.value   = panel_main_robust[, 4]
+) %>%
+  dplyr::filter(term %in% c("(Intercept)", "Gini", "log_GDP"))
+
+panel_main_table
+
+```
+
+In this baseline specification, the coefficient on the Gini index is small and statistically insignificant (p ≈ 0.65), suggesting little systematic association between income inequality and life expectancy once we control for economic development and year fixed effects. By contrast, log(GDP per capita) has a large, statistically significant estimated positive coefficient (about 6.5, p \< 0.001). Interpreting the log term, a 10% increase in GDP per capita (an increase of approximately 0.10 in log(GDP)) is associated with roughly a 0.6-year increase in life expectancy, holding inequality and year constant. Overall, the main panel model indicates that differences in life expectancy across countries are much more strongly related to economic development than to income inequality.
+
+All reported standard errors and p-values for this model are clustered at the country level to account for serial correlation in repeated observations from the same country over time.
+
+## 6. Interaction Model
+
+The baseline panel model assumes that the effects of income inequality and economic development on life expectancy are the same in every world region. To relax this assumption, we estimate an interaction model in which both the Gini index and log(GDP per capita) are allowed to have different slopes by region, while still controlling for year fixed effects. As with the baseline panel model, we compute standard errors clustered by country so that inference is robust to within-country correlation over time.This specification tests whether the inequality–life expectancy and development–life expectancy relationships vary systematically across broad world regions.
+
+```{r}
+#| label: interaction-model
+#| echo: false
+
+# Step 1: Initial region assignment using countrycode
+rq1_panel3 <- rq1_panel2 %>%
+  mutate(
+    Region = countrycode(Country, "country.name", "region")
+  )
+
+# Step 2: Fix country names that are misclassified or unmapped
+# (based on your prior QMD cleaning steps)
+
+rq1_panel3 <- rq1_panel3 %>%
+  mutate(
+    # Micronesia often appears in UN data as a name countrycode won't match
+    Region = ifelse(grepl("Micronesia", Country, ignore.case = TRUE),
+                    "East Asia & Pacific",
+                    Region),
+
+    # Turkey sometimes fails classification due to alternative naming in UN datasets
+    Region = ifelse(Country %in% c("Turkey", "Türkiye", "TÃ¼rkiye") & is.na(Region),
+                    "Europe & Central Asia",
+                    Region)
+  )
+
+# Step 3: Diagnostic check — show countries with missing regions AFTER fixes
+unmapped_countries <- rq1_panel3 %>%
+  filter(is.na(Region)) %>%
+  distinct(Country)
+
+unmapped_countries  # Should be an empty tibble
+
+# Hard fail if any country is still unmapped (ensures clean future runs)
+if (nrow(unmapped_countries) > 0) {
+  stop("Some countries still lack a region classification. Please update mapping.")
+}
+
+# Step 4: Fit the interaction model now that region mapping is complete
+
+model_int <- lm(
+  LifeExp ~ (Gini + log_GDP) * Region + Year_f,
+  data = rq1_panel3
+)
+
+# Step 5: Cluster-robust SE
+vcov_int <- vcovCL(model_int, cluster = ~ Country)
+int_robust <- coeftest(model_int, vcov = vcov_int)
+
+# Step 6: Extract Gini and log(GDP) effects by region
+gini_terms <- int_robust[grep("Gini", rownames(int_robust)), ]
+loggdp_terms <- int_robust[grep("log_GDP", rownames(int_robust)), ]
+
+interaction_slopes <- rbind(
+  data.frame(term = rownames(gini_terms),   gini_terms,   row.names = NULL),
+  data.frame(term = rownames(loggdp_terms), loggdp_terms, row.names = NULL)
+)
+
+colnames(interaction_slopes)[2:5] <- c("estimate", "std.error", "t.value", "p.value")
+
+interaction_slopes
+
+```
+
+## 7. Diagnostics
+
+We assessed whether the interaction model with region-specific slopes provides a reasonable fit to the data by examining residual and Q–Q plots, and by checking for influential observations. These diagnostics focus on the final interaction specification, since it is the model used for substantive interpretation.
+
+```{r}
+#| label: diagnostics-int
+#| echo: false
+#| fig-cap: "Residual and Q–Q plots for the interaction model."
+
+par(mfrow = c(1, 2))
+
+# Residuals vs fitted: linearity + constant variance
+plot(
+  fitted(model_int), resid(model_int),
+  xlab = "Fitted values",
+  ylab = "Residuals",
+  main = "Residuals vs Fitted"
+)
+abline(h = 0, lty = 2)
+
+# Q–Q plot: normality of residuals
+qqnorm(resid(model_int))
+qqline(resid(model_int), col = 2)
+
+par(mfrow = c(1, 1))
+
+```
+
+The residuals versus fitted values show no strong curvature and only mild changes in spread across the range of fitted values, suggesting that the linearity and constant-variance assumptions are reasonably satisfied for the interaction model. The Q–Q plot shows some deviation from normality in the extreme tails, which is common in cross-country data, but the central part of the distribution lies close to the reference line. Given that all inference relies on standard errors clustered at the country level, these modest departures from normality are unlikely to materially affect our conclusions.
+
+```{r}
+
+#| label: diagnostics-high-leverage
+#| echo: false
+
+inf <- influence.measures(model_int)
+infl_idx <- which(apply(inf$is.inf, 1, any))
+
+n_influential <- length(infl_idx)
+
+# Print a labeled summary line 
+cat("Number of potentially influential observations flagged (country–year rows):",
+    n_influential, "\n\n")
+
+if (n_influential > 0) {
+  rq1_panel_nolev <- rq1_panel3[-infl_idx, ]
+
+  model_int_nolev <- lm(
+    LifeExp ~ (Gini + log_GDP) * Region + Year_f,
+    data = rq1_panel_nolev
+  )
+
+  vcov_int_nolev <- vcovCL(model_int_nolev, cluster = ~ Country)
+  int_robust_nolev <- coeftest(model_int_nolev, vcov = vcov_int_nolev)
+
+  # Compare only coefficients that exist in BOTH models
+  common_terms <- intersect(rownames(int_robust), rownames(int_robust_nolev))
+  key_terms <- grep("Gini|log_GDP", common_terms, value = TRUE)
+
+  coef_compare <- data.frame(
+    term           = key_terms,
+    estimate_full  = as.numeric(int_robust[key_terms, 1]),
+    estimate_nolev = as.numeric(int_robust_nolev[key_terms, 1])
+  ) %>%
+    mutate(
+      diff = estimate_nolev - estimate_full,
+      pct_change = 100 * diff / estimate_full
+    ) %>%
+    arrange(desc(abs(diff)))
+
+  # Show only the largest changes 
+  head(coef_compare, 10)
+} else {
+  cat("No influential observations were flagged.\n")
+}
+
+```
+
+The table above compares key interaction-model coefficients estimated on the full sample versus the sample after removing observations flagged as potentially influential. While some coefficients move in magnitude, the substantive conclusions remain stable: log(GDP per capita) remains strongly positively associated with life expectancy, and the inequality effect remains region-dependent, with Sub-Saharan Africa continuing to exhibit the strongest negative inequality–life expectancy relationship. This indicates that the main findings are not driven by a small set of high-leverage observations.
+
+## 8. Region Interpretations
+
+The interaction model allows the relationship between life expectancy and (i) income inequality and (ii) economic development to vary by world region. Overall, economic development (log GDP per capita) is strongly positively associated with life expectancy in every region. In contrast, the association between inequality (Gini) and life expectancy is generally weak across most regions, but Sub-Saharan Africa stands out with a negative inequality–life expectancy relationship. These patterns motivate focusing policy discussion on economic development as the primary correlate of life expectancy, while treating inequality as a region-specific risk factor rather than a universal driver.
+
+```{r}
+
+#| label: region-slopes
+#| echo: false
+
+# Ensure Region is a factor (lm uses factor levels for interactions)
+rq1_panel3 <- rq1_panel3 %>%
+  mutate(Region = factor(Region))
+
+# Optional: set a stable reference region if it exists
+if ("East Asia & Pacific" %in% levels(rq1_panel3$Region)) {
+  rq1_panel3 <- rq1_panel3 %>%
+    mutate(Region = relevel(Region, ref = "East Asia & Pacific"))
+}
+
+# Refit model_int ONLY if Region reference level changed
+model_int <- lm(
+  LifeExp ~ (Gini + log_GDP) * Region + Year_f,
+  data = rq1_panel3
+)
+
+# Extract coefficients
+b <- coef(model_int)
+base_region <- levels(rq1_panel3$Region)[1]
+regions <- levels(rq1_panel3$Region)
+
+get_slope <- function(var, reg) {
+  main <- if (var %in% names(b)) b[[var]] else 0
+  if (reg == base_region) return(main)
+
+  # Interaction term naming in lm is typically "var:Region<level>"
+  int_name <- paste0(var, ":Region", reg)
+  main + if (int_name %in% names(b)) b[[int_name]] else 0
+}
+
+slopes_table <- data.frame(
+  Region = regions,
+  slope_Gini = sapply(regions, function(r) get_slope("Gini", r)),
+  slope_log_GDP = sapply(regions, function(r) get_slope("log_GDP", r))
+)
+
+slopes_table
+
+
+#| label: fig-plot-gini-region
+#| echo: false
+#| fig-cap: "Gini index versus life expectancy by region."
+
+library(ggplot2)
+
+ggplot(rq1_panel3, aes(x = Gini, y = LifeExp, color = Region)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "Gini index",
+    y = "Life expectancy at birth (years)"
+  ) +
+  theme_minimal()
+
+#| label: fig-plot-gdp-region
+#| echo: false
+#| fig-cap: "log(GDP per capita) versus life expectancy by region."
+
+ggplot(rq1_panel3, aes(x = log_GDP, y = LifeExp, color = Region)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    x = "log(GDP per capita)",
+    y = "Life expectancy at birth (years)"
+  ) +
+  theme_minimal()
+
+```
+
+The interaction model implies region-specific slopes for inequality (Gini) and economic development (log GDP per capita). Economic development is positively associated with life expectancy in every region: the estimated log(GDP) slope is largest in the Middle East & North Africa (\~6.68) and South Asia (\~6.17), and remains strongly positive in all other regions (roughly \~4–5). In contrast, the inequality–life expectancy relationship is heterogeneous across regions. The estimated Gini slope is strongly negative in Sub-Saharan Africa (\~−0.25), near zero in Latin America & the Caribbean (\~0), and positive in several regions (e.g., South Asia \~0.28; Middle East & North Africa \~0.17). Taken together, these results suggest that economic development is the dominant correlate of life expectancy globally, while inequality is not a uniform predictor and appears most consequential (negatively) in Sub-Saharan Africa. The region-level scatterplots are consistent with this pattern: the log(GDP)–life expectancy relationship is upward-sloping across regions, whereas the Gini–life expectancy relationship varies substantially by region.
