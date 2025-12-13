@@ -131,7 +131,9 @@ pdf("figure1_lifeexp_gdp.pdf", width = 8, height = 5)
 print(fig_1)
 dev.off()
 ```
+
 ![](figure1_lifeexp_gdp.pdf)
+
 ```{r}
 fig_2 <- ggplot(rq1_panel3, aes(x = Gini, y = LifeExp, color = Region)) +
   geom_point(alpha = 0.25) +
@@ -148,6 +150,7 @@ pdf("figure2_lifeexp_gini.pdf", width = 8, height = 5)
 print(fig_2)
 dev.off()
 ```
+
 ![](figure2_lifeexp_gini.pdf)
 
 ### **2.1.2 Regression results: global effects of GDP and inequality**
@@ -1172,14 +1175,3 @@ This project is well-structured with relatively sufficient data, but is still ma
 -   World Bank. (2010). *The World Bank’s country policy and institutional assessment: An evaluation.* Independent Evaluation Group, World Bank.
 
 -   World Bank. (2022). *Country Policy and Institutional Assessment (CPIA) – methodology and criteria.* World Bank Group.
-
-```{r}
-
-
-```
-
-```{r}
-# The echo: false option disables the printing of code (only output is displayed).
-#| echo: false
-2 * 2
-```
