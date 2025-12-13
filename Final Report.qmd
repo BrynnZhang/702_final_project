@@ -6,7 +6,7 @@ execute:
   message: false
   warning: false
 format:
-  html:
+  pdf:
     toc: true
 ---
 
@@ -116,7 +116,7 @@ Across all regions, countries with higher GDP per capita tend to have longer lif
 By contrast, the raw relationship between income inequality and life expectancy keeping GDP per capita constant is weaker and more mixed. Figure 2 shows life expectancy against the Gini index, again with separate regional trend lines. In many regions, the fitted lines are relatively flat or only slightly sloped, indicating that higher inequality is not systematically associated with higher or lower life expectancy on its own. This suggests that inequality is not a simple standalone predictor of population health once we look across diverse regional contexts.
 
 ```{r}
-ggplot(rq1_panel3, aes(x = log_GDP, y = LifeExp, color = Region)) +
+fig_1 <- ggplot(rq1_panel3, aes(x = log_GDP, y = LifeExp, color = Region)) +
   geom_point(alpha = 0.25) +
   geom_smooth(method = "lm", se = FALSE) +
   labs(
@@ -127,25 +127,28 @@ ggplot(rq1_panel3, aes(x = log_GDP, y = LifeExp, color = Region)) +
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
-
+pdf("figure1_lifeexp_gdp.pdf", width = 8, height = 5)
+print(fig_1)
+dev.off()
 ```
-
+![](figure1_lifeexp_gdp.pdf)
 ```{r}
-ggplot(rq1_panel3, aes(x = Gini, y = LifeExp, color = Region)) +
+fig_2 <- ggplot(rq1_panel3, aes(x = Gini, y = LifeExp, color = Region)) +
   geom_point(alpha = 0.25) +
   geom_smooth(method = "lm", se = FALSE) +
   labs(
     x = "Income inequality (Gini index)",
     y = "Life expectancy at birth (years)",
     color = "Region",
-    title = "Figure 2. Life expectancy vs. income inequality (Gini index) by region"
+    title = "Figure 2. Life expectancy vs. economic inequality (Gini index) by region"
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
-
-
-
+pdf("figure2_lifeexp_gini.pdf", width = 8, height = 5)
+print(fig_2)
+dev.off()
 ```
+![](figure2_lifeexp_gini.pdf)
 
 ### **2.1.2 Regression results: global effects of GDP and inequality**
 
