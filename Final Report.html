@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.57">
+<meta name="generator" content="quarto-1.4.555">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>“Nice relevant title for the analysis”</title>
+<title>Income Inequality, Economic Development, and Sustainability: Cross-Country Evidence on Life Expectancy and Environmental Institutions</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -34,19 +34,115 @@ ul.task-list li input[type="checkbox"] {
 <link href="Final Report_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="Final Report_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#executive-summary" id="toc-executive-summary" class="nav-link active" data-scroll-target="#executive-summary"><strong>Executive Summary</strong></a></li>
+  <li><a href="#problem-motivation" id="toc-problem-motivation" class="nav-link" data-scroll-target="#problem-motivation"><strong>1.</strong> Problem Motivation</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><strong>2. Results</strong></a>
+  <ul class="collapse">
+  <li><a href="#life-expectancy-results" id="toc-life-expectancy-results" class="nav-link" data-scroll-target="#life-expectancy-results"><strong>2.1</strong> Life expectancy results</a>
+  <ul class="collapse">
+  <li><a href="#descriptive-patterns-gdp-inequality-and-life-expectancy" id="toc-descriptive-patterns-gdp-inequality-and-life-expectancy" class="nav-link" data-scroll-target="#descriptive-patterns-gdp-inequality-and-life-expectancy">2.1.1 Descriptive patterns: GDP, inequality, and life expectancy</a></li>
+  <li><a href="#regression-results-global-effects-of-gdp-and-inequality" id="toc-regression-results-global-effects-of-gdp-and-inequality" class="nav-link" data-scroll-target="#regression-results-global-effects-of-gdp-and-inequality"><strong>2.1.2 Regression results: global effects of GDP and inequality</strong></a></li>
+  <li><a href="#regional-differences-and-robustness" id="toc-regional-differences-and-robustness" class="nav-link" data-scroll-target="#regional-differences-and-robustness">2.1.3 Regional differences and robustness</a></li>
+  </ul></li>
+  <li><a href="#sustainability-results" id="toc-sustainability-results" class="nav-link" data-scroll-target="#sustainability-results"><strong>2.2</strong> Sustainability results<strong>:</strong></a>
+  <ul class="collapse">
+  <li><a href="#descriptive-patterns-inequality-gdp-and-sustainability-ratings" id="toc-descriptive-patterns-inequality-gdp-and-sustainability-ratings" class="nav-link" data-scroll-target="#descriptive-patterns-inequality-gdp-and-sustainability-ratings">2.2.1 Descriptive patterns: inequality, GDP, and sustainability ratings</a></li>
+  <li><a href="#ordinal-logistic-regression-results" id="toc-ordinal-logistic-regression-results" class="nav-link" data-scroll-target="#ordinal-logistic-regression-results">2.2.2 Ordinal logistic regression results</a></li>
+  <li><a href="#counterintuitive-inequality-effect" id="toc-counterintuitive-inequality-effect" class="nav-link" data-scroll-target="#counterintuitive-inequality-effect">2.2.3 Counterintuitive inequality effect</a></li>
+  </ul></li>
+  <li><a href="#integrated-implications" id="toc-integrated-implications" class="nav-link" data-scroll-target="#integrated-implications">2.3 Integrated implications</a></li>
+  </ul></li>
+  <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology"><strong>3. Methodology</strong></a>
+  <ul class="collapse">
+  <li><a href="#models-for-life-expectancy" id="toc-models-for-life-expectancy" class="nav-link" data-scroll-target="#models-for-life-expectancy">3.1 Models for life expectancy</a></li>
+  <li><a href="#models-for-sustainability-ratings" id="toc-models-for-sustainability-ratings" class="nav-link" data-scroll-target="#models-for-sustainability-ratings">3.2 Models for sustainability ratings</a></li>
+  </ul></li>
+  <li><a href="#recommended-next-steps" id="toc-recommended-next-steps" class="nav-link" data-scroll-target="#recommended-next-steps"><strong>4. Recommended Next Steps</strong></a>
+  <ul class="collapse">
+  <li><a href="#prioritize-societal-economic-growth-as-the-most-reliable-lever" id="toc-prioritize-societal-economic-growth-as-the-most-reliable-lever" class="nav-link" data-scroll-target="#prioritize-societal-economic-growth-as-the-most-reliable-lever"><strong>4.1.</strong> Prioritize societal economic growth as the most reliable lever</a></li>
+  <li><a href="#treat-inequality-as-a-targeted-risk-signal-not-a-universal-trigger" id="toc-treat-inequality-as-a-targeted-risk-signal-not-a-universal-trigger" class="nav-link" data-scroll-target="#treat-inequality-as-a-targeted-risk-signal-not-a-universal-trigger"><strong>4.2.</strong> Treat inequality as a targeted risk signal, not a universal trigger</a></li>
+  <li><a href="#strengthen-data-and-diagnostics-before-linking-finance-to-scores" id="toc-strengthen-data-and-diagnostics-before-linking-finance-to-scores" class="nav-link" data-scroll-target="#strengthen-data-and-diagnostics-before-linking-finance-to-scores"><strong>4.3.</strong> Strengthen data and diagnostics before linking finance to scores</a></li>
+  </ul></li>
+  <li><a href="#appendix-a.-data" id="toc-appendix-a.-data" class="nav-link" data-scroll-target="#appendix-a.-data"><strong>Appendix A. Data</strong></a>
+  <ul class="collapse">
+  <li><a href="#a.1-data-sources" id="toc-a.1-data-sources" class="nav-link" data-scroll-target="#a.1-data-sources"><strong>A.1 Data sources</strong></a></li>
+  <li><a href="#a.2-life-expectancy-panel" id="toc-a.2-life-expectancy-panel" class="nav-link" data-scroll-target="#a.2-life-expectancy-panel"><strong>A.2</strong> Life expectancy panel</a></li>
+  <li><a href="#a.3-sustainability-panel" id="toc-a.3-sustainability-panel" class="nav-link" data-scroll-target="#a.3-sustainability-panel"><strong>A.3 Sustainability panel</strong></a>
+  <ul class="collapse">
+  <li><a href="#a.3.1-cleaning-and-merging" id="toc-a.3.1-cleaning-and-merging" class="nav-link" data-scroll-target="#a.3.1-cleaning-and-merging"><strong>A.3.1 Cleaning and merging</strong></a></li>
+  <li><a href="#a.4-unified-illustration-of-gdp-transformation" id="toc-a.4-unified-illustration-of-gdp-transformation" class="nav-link" data-scroll-target="#a.4-unified-illustration-of-gdp-transformation">A.4 Unified illustration of GDP transformation</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#appendix-b.-models-for-life-expectancy-panel" id="toc-appendix-b.-models-for-life-expectancy-panel" class="nav-link" data-scroll-target="#appendix-b.-models-for-life-expectancy-panel"><strong>Appendix B. Models for Life Expectancy Panel</strong></a>
+  <ul class="collapse">
+  <li><a href="#b.1-modelling-approach-and-variables" id="toc-b.1-modelling-approach-and-variables" class="nav-link" data-scroll-target="#b.1-modelling-approach-and-variables"><strong>B.1 Modelling approach and variables</strong></a></li>
+  <li><a href="#b.2-baseline-panel-model" id="toc-b.2-baseline-panel-model" class="nav-link" data-scroll-target="#b.2-baseline-panel-model"><strong>B.2 Baseline panel model</strong></a></li>
+  <li><a href="#b.3-region-interaction-model" id="toc-b.3-region-interaction-model" class="nav-link" data-scroll-target="#b.3-region-interaction-model"><strong>B.3 Region-interaction model</strong></a></li>
+  <li><a href="#b.4-model-assessment-and-changes" id="toc-b.4-model-assessment-and-changes" class="nav-link" data-scroll-target="#b.4-model-assessment-and-changes"><strong>B.4 Model assessment and changes</strong></a></li>
+  </ul></li>
+  <li><a href="#appendix-c.-models-for-research-question-2" id="toc-appendix-c.-models-for-research-question-2" class="nav-link" data-scroll-target="#appendix-c.-models-for-research-question-2"><strong>Appendix C. Models for Research Question 2</strong></a>
+  <ul class="collapse">
+  <li><a href="#c.1-modelling-approach-and-variables" id="toc-c.1-modelling-approach-and-variables" class="nav-link" data-scroll-target="#c.1-modelling-approach-and-variables"><strong>C.1 Modelling approach and variables</strong></a></li>
+  <li><a href="#c.2-ordinal-logistic-regression-model" id="toc-c.2-ordinal-logistic-regression-model" class="nav-link" data-scroll-target="#c.2-ordinal-logistic-regression-model">C.2 Ordinal logistic regression model</a></li>
+  <li><a href="#c.3-odds-ratios-on-the-exponential-scale" id="toc-c.3-odds-ratios-on-the-exponential-scale" class="nav-link" data-scroll-target="#c.3-odds-ratios-on-the-exponential-scale">C.3 Odds ratios on the exponential scale</a></li>
+  <li><a href="#c.4-model-assessment-and-fit" id="toc-c.4-model-assessment-and-fit" class="nav-link" data-scroll-target="#c.4-model-assessment-and-fit">C.4 Model assessment and fit</a></li>
+  <li><a href="#c.5-graphical-checks-and-proportional-odds-discussion" id="toc-c.5-graphical-checks-and-proportional-odds-discussion" class="nav-link" data-scroll-target="#c.5-graphical-checks-and-proportional-odds-discussion">C.5 Graphical checks and proportional odds discussion</a></li>
+  </ul></li>
+  <li><a href="#appendix-d.-technical-next-steps" id="toc-appendix-d.-technical-next-steps" class="nav-link" data-scroll-target="#appendix-d.-technical-next-steps"><strong>Appendix D. Technical Next Steps</strong></a>
+  <ul class="collapse">
+  <li><a href="#d.1-data-refinement" id="toc-d.1-data-refinement" class="nav-link" data-scroll-target="#d.1-data-refinement">D.1 Data refinement</a></li>
+  <li><a href="#d.2-modelling-refinements" id="toc-d.2-modelling-refinements" class="nav-link" data-scroll-target="#d.2-modelling-refinements"><strong>D.2 Modelling refinements</strong></a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><strong>References</strong></a></li>
+  </ul>
+</nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">“Nice relevant title for the analysis”</h1>
-<p class="subtitle lead">“Group member names”</p>
+<h1 class="title">Income Inequality, Economic Development, and Sustainability: Cross-Country Evidence on Life Expectancy and Environmental Institutions</h1>
+<p class="subtitle lead">Brynn Zhang, Anvita Suresh, Matthew Fischer, Pinaki Ghosh</p>
 </div>
 
 
@@ -66,14 +162,11 @@ ul.task-list li input[type="checkbox"] {
 <section id="executive-summary" class="level1">
 <h1><strong>Executive Summary</strong></h1>
 <p><strong>Stakeholder: A policy analyst at an international development agency (e.g., the World Bank or UNDP) who advises regional directors on where to prioritize funding and policy support to improve both population health and environmental sustainability in low- and middle-income countries.</strong></p>
-<p>In this project we use harmonized international data to understand how income inequality relates to two outcomes that matter for global development: population health and environmental sustainability. For our first research question, we analyze 1,721 country-year observations from 2000–2023 and fit regression models with region-specific effects to study how income inequality (Gini index) and economic development (log GDP per capita) are associated with life expectancy at birth across seven World Bank regions. For our second research question, we focus on 269 country-year observations from 74 low- and lower-middle-income countries between 2005–2022 and fit an ordinal logistic regression model to test whether income inequality is linked to the World Bank’s CPIA environmental sustainability rating after accounting for log GDP per capita and year. Our goal is not to prove causality, but to give a regional policy advisor a clear view of when inequality seems to move with worse outcomes, and when other factors appear to dominate.</p>
-<p>Across countries and years, we find that higher GDP per capita is consistently and strongly associated with longer life expectancy in every region, while the relationship between income inequality and life expectancy is weaker and highly region-dependent. In most regions, once we control for GDP, inequality has only a small or statistically uncertain association with life expectancy; Sub-Saharan Africa is the main exception, where higher inequality is clearly linked with shorter lives. For environmental sustainability, we see a different pattern. In our ordinal logistic model for CPIA environmental sustainability ratings, both higher log GDP per capita and higher income inequality are associated with better sustainability scores, with GDP showing the larger and more robust effect. This positive association between inequality and sustainability runs counter to our initial expectations and likely reflects structural differences and unmeasured factors in the IDA-eligible countries covered by the CPIA. Taken together, our results suggest that policies aimed at raising income levels are most reliably linked to gains in life expectancy, while inequality may matter in specific regional contexts for health and does not provide a simple, standalone signal for environmental sustainability performance in low- and lower-middle-income countries.</p>
+<p>This project uses harmonized international data to examine how economic inequality relates to two outcomes central to global development: population health and societal sustainability. For life expectancy, we analyze 1,721 country-year observations from 2000–2023 and estimate regression models with region-specific effects to assess how the Gini index and log GDP per capita are associated with life expectancy at birth across seven World Bank regions. For societal sustainability, we study 269 country-year observations from 74 low- and lower-middle-income countries between 2005–2022 using an ordinal logistic regression of the World Bank’s CPIA environmental sustainability rating on income inequality and log GDP per capita. We find that higher GDP per capita is consistently and strongly associated with longer life expectancy in all regions, while the relationship between inequality and life expectancy is weaker and highly region-dependent, with Sub-Saharan Africa standing out as the main region where higher inequality is clearly linked to shorter lives. In contrast, both higher GDP per capita and higher inequality are associated with better CPIA sustainability ratings, with GDP showing the more robust effect. These results suggest that societal economic growth is the most reliable correlate of life expectancy gains, while inequality matters for health in specific regional contexts and does not provide a simple standalone signal for sustainability in low- and lower-middle-income countries.</p>
 </section>
 <section id="problem-motivation" class="level1">
 <h1><strong>1.</strong> Problem Motivation</h1>
-<p>Over the last few decades, global life expectancy has gone up, but there are still big gaps between and within regions. Life expectancy at birth is a common summary of population health because it rolls up mortality at different ages into one number that is easy to compare across countries. At the same time, global policy agendas like the UN Sustainable Development Goals make it clear that health outcomes are linked to broader issues such as income, inequality, and environmental sustainability. For a development agency deciding where to focus limited resources, it is not enough to know that some countries are doing better than others. They need to understand which factors are most strongly associated with better outcomes.</p>
-<p>Income inequality is often discussed as one of those factors. Some researchers argue that more unequal societies tend to have worse health and social outcomes, even when average income is high. Others are more cautious and suggest that the relationship between inequality and health depends a lot on context and stage of development. In parallel, institutions like the World Bank track how strong a country’s policies and institutions are for protecting the environment, because these scores affect access to concessional finance and long term sustainability planning.</p>
-<p>In this project, we use harmonized international data from UNdata and World Bank sources to link these pieces together. First, we look at how income inequality (measured by the Gini index) and economic development (GDP per capita) are associated with life expectancy across countries, and whether these patterns differ by region. Second, we test whether income inequality is related to countries’ environmental sustainability performance, as measured by the CPIA environmental sustainability rating, after controlling for GDP per capita. Together, these two analyses are designed to help an international development agency judge whether inequality is a meaningful signal for where they might see joint benefits in both population health and environmental sustainability.</p>
+<p>Despite substantial gains in global life expectancy over recent decades, large disparities in population health persist across and within world regions. Life expectancy at birth is widely used as a summary indicator of population health because it aggregates mortality across all ages into a single, interpretable measure of expected longevity (Deaton, 2003; Parrish, 2010). International policy frameworks further emphasize that health outcomes are closely linked to economic development, income inequality, and environmental sustainability, as reflected in the Sustainable Development Goals on health, inequality, and climate and environmental protection (United Nations, 2015). Economic inequality is often cited as a key driver of unequal outcomes, with influential work arguing that more unequal societies experience worse health and social outcomes even at similar income levels (Wilkinson &amp; Pickett, 2009; Wilkinson, 2011), while other research stresses that the inequality–health relationship is highly context dependent and shaped by institutions and stages of development (Deaton, 2003). At the same time, international financial institutions increasingly rely on indicators such as the World Bank’s Country Policy and Institutional Assessment (CPIA) environmental sustainability rating to inform concessional financing decisions for low-income countries (World Bank, 2010, 2022). For policymakers with limited resources, a central question is whether economic inequality provides useful information about where population health and environmental sustainability outcomes are most at risk, and where targeted interventions may yield the greatest joint benefits.</p>
 </section>
 <section id="results" class="level1">
 <h1><strong>2. Results</strong></h1>
@@ -82,7 +175,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="descriptive-patterns-gdp-inequality-and-life-expectancy" class="level3">
 <h3 class="anchored" data-anchor-id="descriptive-patterns-gdp-inequality-and-life-expectancy">2.1.1 Descriptive patterns: GDP, inequality, and life expectancy</h3>
 <p>Across all regions, countries with higher GDP per capita tend to have longer life expectancy. Figure 1 plots life expectancy against log(GDP per capita), with separate trend lines by region. The positive relationship is clear in every region, though the slope differs somewhat. In practical terms, moving from very low to middle levels of GDP per capita is associated with several additional years of expected life at birth. This confirms that economic development is a central correlate of population health in our data.</p>
-<p>By contrast, the raw relationship between income inequality and life expectancy is weaker and more mixed. Figure 2 shows life expectancy against the Gini index, again with separate regional trend lines. In many regions, the fitted lines are relatively flat or only slightly sloped, indicating that higher inequality is not systematically associated with higher or lower life expectancy on its own. This suggests that inequality is not a simple standalone predictor of population health once we look across diverse regional contexts.</p>
+<p>By contrast, the raw relationship between income inequality and life expectancy keeping GDP per capita constant is weaker and more mixed. Figure 2 shows life expectancy against the Gini index, again with separate regional trend lines. In many regions, the fitted lines are relatively flat or only slightly sloped, indicating that higher inequality is not systematically associated with higher or lower life expectancy on its own. This suggests that inequality is not a simple standalone predictor of population health once we look across diverse regional contexts.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -105,11 +198,11 @@ ul.task-list li input[type="checkbox"] {
 <section id="regression-results-global-effects-of-gdp-and-inequality" class="level3">
 <h3 class="anchored" data-anchor-id="regression-results-global-effects-of-gdp-and-inequality"><strong>2.1.2 Regression results: global effects of GDP and inequality</strong></h3>
 <p>To move beyond these descriptive patterns, we fit a linear regression model with life expectancy as the outcome and the Gini index, log(GDP per capita), region indicators, and year fixed effects as predictors. This model uses the full panel of 1,721 country–year observations and controls for broad regional differences and global time trends.</p>
-<p>The model(Table 1) confirms that economic development is strongly and positively associated with life expectancy. Holding inequality, region, and year constant, higher log(GDP per capita) is associated with longer life expectancy, and the confidence interval for this effect is well above zero. In contrast, the global coefficient on the Gini index is much smaller in magnitude and closer to zero, indicating that, on average across regions and years, inequality is only weakly related to life expectancy once income is taken into account.</p>
+<p>The model (Table 1) confirms that economic development is strongly and positively associated with life expectancy. Holding inequality, region, and year constant, higher log(GDP per capita) is associated with longer life expectancy, and the confidence interval for this effect is well above zero. In contrast, the global coefficient on the Gini index is much smaller in magnitude and closer to zero, indicating that, on average across regions and years, inequality is only weakly related to life expectancy once income is taken into account.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
-<caption>Table 1. Estimated effects of income inequality and economic development on life expectancy (year and region adjusted).</caption>
+<caption>Estimated effects of income inequality and economic development on life expectancy (year and region adjusted).</caption>
 <thead>
 <tr class="header">
 <th style="text-align: left;">Variable</th>
@@ -160,15 +253,14 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="regional-differences-and-robustness" class="level3">
 <h3 class="anchored" data-anchor-id="regional-differences-and-robustness">2.1.3 Regional differences and robustness</h3>
-<p>Although the global effect of inequality is weak, our region-specific analysis shows that this masks important heterogeneity. When we allow the Gini–life expectancy relationship to vary by region (see technical appendix), Sub-Saharan Africa emerges as the main exception. In this region, higher inequality is clearly associated with lower life expectancy even after controlling for GDP per capita and year. In other regions, the inequality slope is much closer to zero and often statistically indistinguishable from no effect.</p>
-<p>We checked whether these results depend on a small number of influential country–year observations. Standard diagnostic plots indicate some influential points, which is common in cross-country data, but re-estimating the models after excluding them does not materially change the main conclusions. The strong positive association between economic development and life expectancy persists, and the pattern that inequality matters more in Sub-Saharan Africa than elsewhere remains. This gives us more confidence that the findings are not driven by a few extreme cases.</p>
+<p>Although the global association between inequality and life expectancy is weak, region-specific models reveal important heterogeneity. Allowing the Gini index–life expectancy relationship to vary by region shows that Sub-Saharan Africa is the main exception, where higher inequality is clearly associated with shorter life expectancy even after controlling for GDP per capita and year. In other regions, the inequality effect is close to zero and often statistically indistinguishable from no relationship. Robustness checks indicate that these results are not driven by a small number of influential country-year observations: excluding such points does not alter the strong positive association between income and life expectancy or the distinctive role of inequality in Sub-Saharan Africa, increasing confidence in the stability of the findings.</p>
 </section>
 </section>
 <section id="sustainability-results" class="level2">
 <h2 class="anchored" data-anchor-id="sustainability-results"><strong>2.2</strong> Sustainability results<strong>:</strong></h2>
 <section id="descriptive-patterns-inequality-gdp-and-sustainability-ratings" class="level3">
 <h3 class="anchored" data-anchor-id="descriptive-patterns-inequality-gdp-and-sustainability-ratings">2.2.1 Descriptive patterns: inequality, GDP, and sustainability ratings</h3>
-<p>We then focus on 269 country–year observations from low- and lower-middle-income countries with CPIA environmental sustainability ratings. Figure 4 shows simple bivariate relationships between the sustainability rating and our two main predictors. The left panel plots sustainability against the Gini index and shows a gentle upward slope: countries with higher inequality tend to have slightly higher sustainability ratings on average, although points are widely scattered. The right panel plots sustainability against log(GDP per capita) and shows a clearer upward trend, with higher-income countries more likely to have higher sustainability ratings.</p>
+<p>We then focus on 269 country–year observations from low- and lower-middle-income countries with CPIA sustainability ratings. Figure 4 shows simple bivariate relationships between the sustainability rating and our two main predictors. The left panel plots sustainability against the Gini index and shows a gentle upward slope: countries with higher inequality tend to have slightly higher sustainability ratings on average, although points are widely scattered. The right panel plots sustainability against log(GDP per capita) and shows a clearer upward trend, with higher-income countries more likely to have higher sustainability ratings.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -185,7 +277,7 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p>Figure 5 looks at the same relationships by sustainability category. The Gini boxplots show that median inequality increases slightly from lower to higher sustainability categories, but there is substantial overlap in the distributions. In other words, countries with similar sustainability ratings can have quite different levels of inequality. In contrast, the log(GDP) boxplots show a clearer separation across categories, with higher-rated countries consistently having higher median GDP per capita. This suggests that economic development is a stronger differentiator of sustainability performance than inequality.</p>
+<p>Figure 5 looks at the same relationships by sustainability category. The Gini index boxplots show that median inequality increases slightly from lower to higher sustainability categories, but there is substantial overlap in the distributions. In other words, countries with similar sustainability ratings can have quite different levels of inequality. In contrast, the log(GDP) boxplots show a clearer separation across categories, with higher-rated countries consistently having higher median GDP per capita. This suggests that economic development is a stronger differentiator of sustainability performance than inequality.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -205,12 +297,11 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="ordinal-logistic-regression-results" class="level3">
 <h3 class="anchored" data-anchor-id="ordinal-logistic-regression-results">2.2.2 Ordinal logistic regression results</h3>
-<p>To formally test how inequality and income relate to sustainability ratings, we fit an ordinal logistic regression (proportional odds model) with the ordered sustainability rating as the outcome and Gini, log(GDP per capita), and year fixed effects as predictors. This model respects the ordered nature of the CPIA score and controls for common shocks and possible changes in rating practices over time.</p>
-<p>The regression results(Table 2) show that both inequality and GDP are positively associated with higher sustainability ratings, holding year constant. The estimated log-odds coefficient for the Gini index is about 0.074, which corresponds to an odds ratio of about 1.08 per one-point increase in the Gini index. Substantively, a 10-point increase in inequality (for example, from 30 to 40) is associated with roughly a doubling of the odds of being in a higher sustainability category. For log(GDP), the estimated coefficient is about 0.84, corresponding to an odds ratio of about 2.3. A one-unit increase in log(GDP)—roughly a 2.7× increase in GDP per capita—is therefore associated with more than double the odds of being in a higher sustainability category. Both effects are highly statistically significant.</p>
+<p>We estimate an ordinal logistic regression with the CPIA sustainability rating as the ordered outcome and the Gini index, log GDP per capita, and year fixed effects as predictors, which accounts for the ordered nature of the score and absorbs common shocks or changes in rating practices over time. The results (Table 2) show that both inequality and income are positively associated with higher sustainability ratings. The regression coefficient for Gini index is about 0.074, implying an odds ratio of roughly 1.08 per one-point increase and approximately a doubling of the odds of a higher rating for a 10-point increase in inequality. The regression coefficient for log GDP is about 0.84, corresponding to an odds ratio of about 2.3, so a one-unit increase in log GDP per capita (roughly a 2.7-fold increase in income)is associated with more than double the odds of being in a higher sustainability category. Both associations are statistically significant.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
-<caption>Table 2. Ordinal logistic regression odds ratios for inequality and economic development on sustainability ratings (controlling for year).</caption>
+<caption>Ordinal logistic regression odds ratios for inequality and economic development on sustainability ratings (controlling for year).</caption>
 <colgroup>
 <col style="width: 22%">
 <col style="width: 11%">
@@ -416,79 +507,1883 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p>Figure 6 compares the coefficients for Gini and log(GDP) on the log-odds scale. Both bars are clearly above zero, but the bar for log(GDP) is taller, reflecting its stronger association with sustainability ratings. This supports the idea that among low- and lower-middle-income countries, economic development is a more powerful predictor of environmental institutional strength than income distribution, even though inequality also has a positive association.</p>
-<p>Year fixed effects are generally small and imprecise, and the likelihood ratio test shows that including Gini, log(GDP), and year jointly improves model fit over a model with only intercepts. McFadden’s pseudo-R² is modest (around 0.06), which is typical for institutional rating data and reflects the fact that sustainability outcomes depend on many unobserved country-specific factors. For our purposes, the key point is that the estimated associations for Gini and GDP are statistically robust and directionally clear.</p>
+<p>Figure 6 compares the regression coefficients for Gini index and log(GDP) on the log-odds scale. Both bars are clearly above zero, but the bar for log(GDP) is taller, reflecting its larger affect with sustainability ratings. This supports the idea that among low- and lower-middle-income countries, economic development holds more weight in predicting institutional sustainability than income distribution, even though inequality also has a positive association.</p>
+<p>Year fixed effects are generally small and imprecise, and the likelihood ratio test shows that including Gini index, log(GDP), and year jointly improves model fit over a model with only intercepts. McFadden’s pseudo-R² is modest (around 0.06), which is typical for institutional rating data and reflects the fact that sustainability outcomes depend on many unobserved country-specific factors. For our purposes, the key point is that the estimated associations for Gini index and GDP are statistically robust and directionally clear.</p>
 </section>
 <section id="counterintuitive-inequality-effect" class="level3">
 <h3 class="anchored" data-anchor-id="counterintuitive-inequality-effect">2.2.3 Counterintuitive inequality effect</h3>
-<p>The positive sign on the Gini coefficient is counterintuitive, because we might expect more unequal societies to have weaker environmental institutions. Several explanations are possible. First, CPIA ratings are only available for IDA-eligible (low and lower-middle-income) countries. Within this restricted group, countries with somewhat higher inequality may also have more diversified economies, larger urban centers, or stronger statistical systems, all of which can support environmental policy frameworks. Second, inequality and sustainability may both be driven by deeper structural factors, such as governance capacity, that we do not observe. Third, because CPIA scores are based on expert judgment, they may emphasize formal policy frameworks and institutional arrangements rather than distributional outcomes.</p>
-<p>Whatever the mechanism, the practical takeaway is that inequality alone is not a reliable screening signal for environmental sustainability performance in this set of countries. GDP per capita is more strongly and consistently associated with higher sustainability ratings, and the positive inequality effect should be interpreted with caution and explored further in future work rather than treated as evidence that higher inequality is desirable.</p>
+<p>The positive coefficient on the Gini index is counterintuitive, as higher inequality is often expected to be associated with less sustainable policies and institutions. Several factors may explain this result. CPIA ratings are observed only for IDA-eligible low- and lower-middle-income countries, within which higher inequality may coincide with greater urbanization, more diversified economies, or stronger administrative and statistical capacity that support environmental policy frameworks. In addition, both inequality and sustainability ratings may reflect deeper, unobserved structural characteristics such as governance quality, and CPIA scores themselves emphasize formal policies and institutions rather than distributional outcomes. The practical implication is that inequality alone is not a reliable screening indicator for environmental sustainability performance in this sample. GDP per capita shows a stronger and more consistent association with sustainability ratings, and the positive inequality effect should be interpreted cautiously and examined further rather than viewed as evidence that higher inequality improves environmental outcomes.</p>
 </section>
 </section>
 <section id="integrated-implications" class="level2">
 <h2 class="anchored" data-anchor-id="integrated-implications">2.3 Integrated implications</h2>
-<p>Looking across the two research questions, we see a consistent pattern in how economic development and inequality relate to our outcomes. For life expectancy, log(GDP per capita) is the dominant predictor: richer countries have longer life expectancy in every region, and this relationship remains strong after we control for year and region fixed effects. Inequality, in contrast, plays a secondary role. Its global effect is small and imprecise, and only in Sub-Saharan Africa do we see a clear negative association between higher inequality and shorter lives. This suggests that inequality can matter for health, but its impact is context dependent and interacts with broader structural conditions.</p>
-<p>For environmental sustainability, both inequality and GDP per capita are positively associated with higher CPIA sustainability ratings, but GDP again has the stronger effect. The positive inequality coefficient is surprising and likely reflects sample restrictions, measurement issues, and unobserved confounders rather than a simple causal relationship. In practice, sustainability ratings appear to track a country’s overall institutional and economic capacity more than its income distribution.</p>
-<p>For a regional policy advisor, these findings point to a few practical implications. First, investments that raise income levels—through growth, productivity, and basic infrastructure—are the most reliable levers for improving life expectancy across regions and for supporting stronger environmental institutions in low- and lower-middle-income countries. Second, inequality is not a universal signal of poor outcomes. It deserves special attention in places like Sub-Saharan Africa, where it appears more tightly connected to health, but it should not be used in isolation as a proxy for environmental sustainability performance. Finally, because both outcomes are influenced by many unobserved factors, it will be important to combine this kind of cross-country statistical evidence with country-specific knowledge when prioritizing interventions and evaluating progress.</p>
+<p>Taken together, the two analyses reveal a consistent pattern. Economic development, measured by log GDP per capita, is the dominant predictor of both outcomes. Higher income levels are strongly associated with longer life expectancy across all regions and with higher sustainability ratings among low- and lower-middle-income countries. Economic inequality plays a more limited and context-dependent role. Its association with life expectancy is generally weak and imprecise, except in Sub-Saharan Africa, where higher inequality is clearly linked to shorter life expectancies. For sustainability, the positive association with inequality is likely driven by sample restrictions, measurement issues, and unobserved institutional factors rather than a causal relationship.</p>
+<p>For a regional policy advisor, these results suggest several practical lessons. Policies that raise economic productivity remain the most reliable lever for improving population health and supporting environmental institutions. Inequality warrants targeted attention in specific contexts, particularly in Sub-Saharan Africa, but it should not be used in isolation as a proxy for environmental sustainability performance. More broadly, because both health and sustainability outcomes are shaped by complex and partially unobserved factors, cross-country statistical results should be complemented with country-specific institutional knowledge when setting priorities and designing interventions.</p>
 </section>
 </section>
 <section id="methodology" class="level1">
 <h1><strong>3. Methodology</strong></h1>
-<p>Our analysis uses regression models as descriptive tools to understand how income inequality and economic development relate to life expectancy and environmental sustainability. In each case we control for other factors such as year and region so that we can interpret the coefficients as associations <strong>holding those factors constant</strong>, not as causal effects.</p>
+<p>Our analysis uses regression models as descriptive tools to examine how economic inequality and economic development are associated with life expectancy and sustainability. In each case, we control for observed factors such as year and region so that estimated coefficients can be interpreted as associations holding those factors constant, rather than as causal effects. The models are designed to provide policy-relevant summaries of how differences in income levels and income distribution tend to align with differences in outcomes across countries and over time.</p>
 <section id="models-for-life-expectancy" class="level2">
 <h2 class="anchored" data-anchor-id="models-for-life-expectancy">3.1 Models for life expectancy</h2>
-<p>To study life expectancy at birth (measured in years), we fit linear regression models. In these models, life expectancy is explained by the Gini index (income inequality), log GDP per capita (PPP), region, and year.</p>
-<p>The basic idea is simple. The coefficient on log GDP per capita tells us how many years of additional life expectancy are associated with a one unit increase in log GDP, holding inequality, region, and year fixed. Because log GDP is on a log scale, this roughly corresponds to a 2.7 times increase in income. In practical terms, this coefficient answers: <em>“If two countries are similar in inequality and observed year but one is richer, how much longer do people in the richer country tend to live?”</em></p>
-<p>The coefficient on the Gini index tells us how life expectancy changes when inequality rises, after controlling for GDP, region, and year. In the results we rescale this coefficient to a 10 point increase in the Gini index so it has a more intuitive interpretation, for example: <em>“A 10 point increase in inequality is associated with about X years difference in life expectancy, holding other factors constant.”</em></p>
-<p>Because relationships may differ across regions, we also estimate a version of the model that allows the Gini effect and the GDP effect to vary by region. In that specification each region has its own slope for inequality. These region specific coefficients let us say things like: <em>“Within Sub-Saharan Africa, higher inequality is associated with lower life expectancy even after we adjust for GDP and year, while in many other regions the inequality slope is close to zero.”</em></p>
+<p>To study life expectancy at birth, measured in years, we estimate linear regression models in which life expectancy is explained by the Gini index, log GDP per capita (PPP), region, and year. The coefficient on log GDP per capita indicates how many additional years of life expectancy are associated with a one-unit increase in log income, which corresponds roughly to a 2.7-fold increase in GDP, holding inequality, region, and year fixed. The coefficient on the Gini index captures how life expectancy changes as inequality rises after controlling for income and other factors, and we rescale this effect to reflect a 10-point increase in the Gini index for easier interpretation. Because the relationship between inequality and health may differ across regions, we also estimate a specification that allows the effects of inequality and income to vary by region, producing region-specific slopes that highlight where inequality is more strongly linked to shorter or longer lives.</p>
 </section>
 <section id="models-for-sustainability-ratings" class="level2">
 <h2 class="anchored" data-anchor-id="models-for-sustainability-ratings">3.2 Models for sustainability ratings</h2>
-<p>For environmental sustainability, the outcome is the CPIA environmental sustainability rating. This is an ordered score rather than a continuous variable, so we use an <strong>ordinal logistic regression</strong> (proportional odds model) instead of a linear model.</p>
-<p>In this model, the predictors are the Gini index, log GDP per capita, and year. The model estimates how these predictors change the <strong>log odds</strong> that a country receives a higher sustainability rating rather than a lower one, holding the other variables fixed.</p>
-<p>The Gini coefficient in this model can be interpreted through its odds ratio. When we exponentiate the coefficient, we obtain a number greater than 1. For example, an odds ratio of about 1.08 means that a one point increase in the Gini index is associated with an 8 percent increase in the odds of being in a higher sustainability category, holding GDP and year constant. A 10 point increase in inequality would then roughly double those odds. The log GDP coefficient is interpreted in the same way. Its odds ratio tells us how much the odds of a higher sustainability rating change when GDP per capita increases on the log scale, for example when income doubles or triples.</p>
-<p>Year indicators in the model absorb any global shifts in CPIA scoring standards or common shocks that affect all countries in the same calendar year. This lets us focus on how differences in inequality and income across countries, rather than across years, line up with differences in sustainability ratings</p>
+<p>For sustainability, the outcome variable is the CPIA environmental sustainability rating, which is an ordered categorical measure, so we estimate an ordinal logistic regression rather than a linear model. The CPIA sustainability rating is a measure developed as part of the Country Policy and Institutional Assessment (CPIA) as an indicator of a country’s efforts via policies and institutions for sustainable development. This can include natural resources management, pollution, economic growth, and poverty reduction measures. The predictors in this model are the Gini index, log GDP per capita, and year, and the coefficients describe how these variables shift the log odds of a country receiving a higher rather than a lower sustainability rating, holding other factors constant. Interpreting the exponentiated coefficients as odds ratios, a value greater than one indicates higher odds of being in a higher sustainability category; for example, an odds ratio of about 1.08 for the Gini index implies that a one-point increase in inequality is associated with an 8 percent increase in the odds of a higher rating, with larger changes implied for a 10-point increase. Year indicators absorb common global trends or changes in scoring standards, allowing the analysis to focus on how cross-country differences in income and inequality align with differences in environmental sustainability performance.</p>
 </section>
 </section>
 <section id="recommended-next-steps" class="level1">
 <h1><strong>4. Recommended Next Steps</strong></h1>
-<p>Based on our results and the limitations of the current data, we see four concrete next steps for the stakeholder.</p>
-<section id="treat-economic-development-as-the-primary-health-and-sustainability-lever" class="level2">
-<h2 class="anchored" data-anchor-id="treat-economic-development-as-the-primary-health-and-sustainability-lever"><strong>4.1. Treat economic development as the primary health and sustainability lever</strong></h2>
-<p>Our findings consistently show that higher GDP per capita is strongly associated with longer life expectancy and with stronger environmental sustainability ratings. The first priority is to continue supporting country programs that expand basic infrastructure, productivity, and fiscal space, especially in lower income countries. In practice this means: prioritizing investments in primary health systems, clean water and sanitation, and energy access, and pairing them with support for domestic revenue and private sector development. We should also encourage country teams to track how these growth oriented investments translate into gains in life expectancy and sustainability scores over time.</p>
+<p>Based on our results and the limitations of the current data, we see three concrete next steps for the stakeholder.</p>
+<section id="prioritize-societal-economic-growth-as-the-most-reliable-lever" class="level2">
+<h2 class="anchored" data-anchor-id="prioritize-societal-economic-growth-as-the-most-reliable-lever"><strong>4.1.</strong> Prioritize societal economic growth as the most reliable lever</h2>
+<p>Economic development is consistently associated with longer life expectancy and stronger environmental institutions, supporting continued focus on investments in basic infrastructure, primary health systems, water and sanitation, energy access, and productivity, alongside monitoring how growth translates into health and sustainability gains over time.</p>
 </section>
-<section id="address-inequality-where-it-is-most-closely-linked-to-poor-outcomes" class="level2">
-<h2 class="anchored" data-anchor-id="address-inequality-where-it-is-most-closely-linked-to-poor-outcomes"><strong>4.2. Address inequality where it is most closely linked to poor outcomes</strong></h2>
-<p>Inequality is not a universal predictor in our analysis. Its association with life expectancy is weak in many regions, but meaningfully negative in Sub Saharan Africa even after we control for income. For sustainability ratings, the positive association is likely driven by sample restrictions and unobserved factors rather than a simple causal effect. Our recommendation is to treat inequality as a targeted risk flag rather than a blanket target. Country teams working in Sub Saharan Africa should pair growth support with programs that expand access to basic services for the poorest households, such as primary health care, nutrition, and rural infrastructure. In other regions, inequality focused interventions should be justified by local evidence rather than assumed to improve average life expectancy or environmental performance on their own.</p>
+<section id="treat-inequality-as-a-targeted-risk-signal-not-a-universal-trigger" class="level2">
+<h2 class="anchored" data-anchor-id="treat-inequality-as-a-targeted-risk-signal-not-a-universal-trigger"><strong>4.2.</strong> Treat inequality as a targeted risk signal, not a universal trigger</h2>
+<p>Inequality warrants focused attention in contexts such as Sub-Saharan Africa, where it is closely linked to poorer health outcomes, but it should not be used in isolation as a proxy for sustainability or average health performance in other regions without supporting country-level evidence.</p>
 </section>
-<section id="strengthen-data-and-diagnostic-tools-before-tying-finance-to-inequality-or-sustainability-scores" class="level2">
-<h2 class="anchored" data-anchor-id="strengthen-data-and-diagnostic-tools-before-tying-finance-to-inequality-or-sustainability-scores"><strong>4.3. Strengthen data and diagnostic tools before tying finance to inequality or sustainability scores</strong></h2>
-<p>Both outcomes in this project rely on imperfect indicators. Life expectancy estimates and Gini coefficients can differ across sources and methods, and CPIA sustainability ratings are based on expert judgment for a restricted set of low and lower middle income countries. Before using inequality or sustainability scores to trigger financing decisions, we recommend the following. First, invest in country statistical capacity to improve the coverage and comparability of household surveys and national accounts. Second, complement CPIA scores with objective indicators such as air quality, deforestation rates, and enforcement data where possible. Third, pilot simple dashboards that combine our regression based risk signals with local indicators so that regional teams can see where model based warnings align with country level diagnostics and where they do not.</p>
-</section>
-<section id="deepen-the-analysis-with-richer-covariates-and-country-level-case-work" class="level2">
-<h2 class="anchored" data-anchor-id="deepen-the-analysis-with-richer-covariates-and-country-level-case-work"><strong>4.4. Deepen the analysis with richer covariates and country level case work</strong></h2>
-<p>Our models are intentionally simple and leave out many factors that likely matter, such as governance quality, political regime, natural resource dependence, and urbanization. A natural next step is to link the current dataset with additional public indicators, refit the models, and test whether the key patterns hold. In parallel, we recommend selecting a small set of countries that sit off the expected lines in our figures, for example countries with relatively low life expectancy given their income or unusually high sustainability scores given their inequality. Country teams could use these cases to explore mechanisms that our global models cannot capture, and to identify specific policy levers that are feasible in each context.</p>
-<p>Taken together, these steps let us use the current results as an initial prioritization tool. We rely on economic development as the most robust driver of both health and environmental institutions, treat inequality as a context dependent risk factor, improve the quality of the underlying data, and then combine global patterns with country specific knowledge before making large policy or financing moves.</p>
+<section id="strengthen-data-and-diagnostics-before-linking-finance-to-scores" class="level2">
+<h2 class="anchored" data-anchor-id="strengthen-data-and-diagnostics-before-linking-finance-to-scores"><strong>4.3.</strong> Strengthen data and diagnostics before linking finance to scores</h2>
+<p>Given measurement limitations in life expectancy, inequality, and CPIA sustainability ratings, financing decisions should be supported by improved statistical capacity, complementary objective indicators, richer covariates, and targeted country case work that combines global model signals with local institutional knowledge. Specifically, the dataset used for CPIA sustainability ratings was missing data for many countries, including but not limited to many higher-income countries, and the dataset used for Gini index was also missing data for a large portions of countries globally.</p>
 </section>
 </section>
 <section id="appendix-a.-data" class="level1">
 <h1><strong>Appendix A. Data</strong></h1>
-<p>Provide more background on the data, including any cleaning that needed to be done that affects the model (e.g., were levels of a categorical variable combined? Did you exclude missing values? If so, how many?). Data cleaning that does not affect the model, such as creating factor variables, does not need to be mentioned (it is always assumed that <em>some</em> cleaning is necessary).</p>
+<section id="a.1-data-sources" class="level2">
+<h2 class="anchored" data-anchor-id="a.1-data-sources"><strong>A.1 Data sources</strong></h2>
+<p>This project builds two country–year panels from international data:</p>
+<ol type="1">
+<li>A health panel for Research Question 1, linking income inequality, economic development, and life expectancy at birth.</li>
+<li>A sustainability panel for Research Question 2, linking inequality, economic development, and CPIA sustainability ratings.</li>
+</ol>
+<p>All data are drawn from publicly available international sources:</p>
+<ul>
+<li><p>Economic inequality (Gini index): UN/World Bank inequality series, downloaded from UNdata (https://data.un.org/Data.aspx?q=gini&amp;d=WDI&amp;f=Indicator_Code%3aSI.POV.GINI).</p></li>
+<li><p>GDP per capita (PPP, constant international dollars): World Bank World Development Indicators series NY.GDP.PCAP.PP.CD, accessed via UNdata (https://data.un.org/Data.aspx?q=gdp+per+capita&amp;d=WDI&amp;f=Indicator_Code%3aNY.GDP.PCAP.PP.CD).</p></li>
+<li><p>Life expectancy at birth (years): UN life table data from UNdata, using the “Medium” variant (https://data.un.org/Data.aspx?q=life+expectancy&amp;d=PopDiv&amp;f=variableID%3a68).</p></li>
+<li><p>Sustainability ratings: World Bank Country Policy and Institutional Assessment (CPIA), sustainability criterion, pre-processed into a country–year dataset, taken from the UN website (https://data.un.org/Data.aspx?q=sustainability&amp;d=WDI&amp;f=Indicator_Code%3aIQ.CPA.ENVR.XQ).</p></li>
+</ul>
+<p>The Table below reads the raw (or pre-cleaned) files and reports the row counts for each source so that the scope of the input data is transparent</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Row counts for raw and pre-cleaned data sources.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">dataset</th>
+<th style="text-align: right;">n_rows</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">UN Gini (RQ1)</td>
+<td style="text-align: right;">2111</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UN GDP (RQ1)</td>
+<td style="text-align: right;">8268</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">UN Life expectancy (RQ1)</td>
+<td style="text-align: right;">84360</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UN Gini (RQ2)</td>
+<td style="text-align: right;">2111</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">UN GDP (RQ2)</td>
+<td style="text-align: right;">5609</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CPIA sustainability (RQ2)</td>
+<td style="text-align: right;">1437</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </section>
-<section id="appendix-b.-models-for-research-question-1" class="level1">
-<h1><strong>Appendix B. Models for Research Question 1</strong></h1>
-<p>Describe the process you used to conduct analysis for both research questions. Describe the types of models that you fit and why they were appropriate, and the assumptions for each model. Specify the covariates in each model, and make sure to include both primary independent variables relevant to the research question <strong>and</strong> potential confounding variables. <strong>You are required to use at least one interaction term in one of your models</strong>. Describe how you assessed your models and any changes you made based on the assessment. Finally, present full summary tables that include estimates, standard errors, confidence intervals, and p-values. These should be on the exponential scale for GLMs.</p>
+<section id="a.2-life-expectancy-panel" class="level2">
+<h2 class="anchored" data-anchor-id="a.2-life-expectancy-panel"><strong>A.2</strong> Life expectancy panel</h2>
+<p>For the first research question, we construct a country–year panel where each observation has life expectancy at birth, Gini, and GDP per capita for the same country and year.</p>
+<p>Cleaning decisions that affect the model:</p>
+<ol type="1">
+<li>Country alignment: when cleaning GDP and life expectancy, we keep only countries that appear in the Gini dataset.</li>
+<li>Remove missing GDP and life expectancy: rows with missing GDP or life expectancy are dropped before merging.</li>
+<li>Merge on Country and Year: we use inner joins so that only overlapping country–years are kept.</li>
+<li>Drop remaining missing values in any of the three core variables after merging.</li>
+<li>Assign regions and drop rows without a valid region (e.g., aggregates).</li>
+<li>Transform GDP: we use log(GDP) in the models rather than raw GDP.</li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Missing values in LifeExp, Gini, and GDP before final filtering.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">n_rows_total</th>
+<th style="text-align: right;">miss_LifeExp</th>
+<th style="text-align: right;">miss_Gini</th>
+<th style="text-align: right;">miss_GDP</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1721</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Final life expectancy analysis sample: countries, years, and observations.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">n_countries</th>
+<th style="text-align: right;">n_years</th>
+<th style="text-align: right;">n_rows</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">152</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">1721</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="a.3-sustainability-panel" class="level2">
+<h2 class="anchored" data-anchor-id="a.3-sustainability-panel"><strong>A.3 Sustainability panel</strong></h2>
+<section id="a.3.1-cleaning-and-merging" class="level3">
+<h3 class="anchored" data-anchor-id="a.3.1-cleaning-and-merging"><strong>A.3.1 Cleaning and merging</strong></h3>
+<p>For the sustainability panel, we construct a sustainability panel where each observation has a CPIA sustainability rating, Gini, and GDP per capita for the same country and year. CPIA scores are only reported for IDA-eligible low and lower-middle-income countries, so the panel is restricted to that group from the outset.</p>
+<p>Cleaning decisions that affect the model:</p>
+<ol type="1">
+<li><p>Harmonize column names in the sustainability file.</p></li>
+<li><p>Inner join on Country and Year across sustainability, Gini, and GDP.</p></li>
+<li><p>Check for missing values in the three analysis variables.</p></li>
+<li><p>Create ordered outcome and log(GDP); drop any rows with non-finite log(GDP) (none in practice).</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Missing values in sustainability, Gini, and GDP.</caption>
+<colgroup>
+<col style="width: 12%">
+<col style="width: 29%">
+<col style="width: 16%">
+<col style="width: 15%">
+<col style="width: 26%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Total Obs</th>
+<th style="text-align: right;">Missing Sustainability</th>
+<th style="text-align: right;">Missing Gini</th>
+<th style="text-align: right;">Missing GDP</th>
+<th style="text-align: right;">Missing Any Variable</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">269</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Final sustainability analysis sample: countries, years, and observations.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">n_countries</th>
+<th style="text-align: right;">n_years</th>
+<th style="text-align: right;">n_rows</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">269</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div></li>
+</ol>
+<p>We can also show how CPIA ratings are distributed in the final sample from the table A.6 below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Distribution of CPIA environmental sustainability ratings.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Sustainability level</th>
+<th style="text-align: right;">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2.5</td>
+<td style="text-align: right;">32</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3</td>
+<td style="text-align: right;">91</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">3.5</td>
+<td style="text-align: right;">104</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4</td>
+<td style="text-align: right;">36</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4.5</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="a.4-unified-illustration-of-gdp-transformation" class="level3">
+<h3 class="anchored" data-anchor-id="a.4-unified-illustration-of-gdp-transformation">A.4 Unified illustration of GDP transformation</h3>
+<p>Both panels use <strong>log(GDP per capita)</strong> instead of raw GDP in the final models. To keep the appendix unified, we use a single figure that shows the distribution of GDP and log(GDP) in <strong>both</strong> samples.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="appendix-b.-models-for-life-expectancy-panel" class="level1">
+<h1><strong>Appendix B. Models for Life Expectancy Panel</strong></h1>
+<section id="b.1-modelling-approach-and-variables" class="level2">
+<h2 class="anchored" data-anchor-id="b.1-modelling-approach-and-variables"><strong>B.1 Modelling approach and variables</strong></h2>
+<p>The outcome for Research Question 1 is life expectancy at birth (years), a continuous variable. Since we want to relate life expectancy to income inequality and economic development while controlling for time, we use linear regression models with:</p>
+<ul>
+<li><p>Country–year observations</p></li>
+<li><p>Year fixed effects (factor for calendar year)</p></li>
+<li><p>Cluster-robust standard errors at the country level</p></li>
+</ul>
+<p><strong>Main predictors:</strong></p>
+<ul>
+<li><p>Gini: Gini index of income inequality (continuous)</p></li>
+<li><p>log_GDP: natural log of GDP per capita (PPP, constant international dollars)</p></li>
+<li><p>Region: world region from countrycode (factor)</p></li>
+</ul>
+<p>We fit two main models:</p>
+<ol type="1">
+<li><p><strong>Baseline panel model:</strong></p>
+<p><span class="math display">\[
+LifeExp_{ct}​=β_0​+β_1​Gini_{ct}​+β_2​log(GDP_{ct}​)+γ_t​+ε_{ct}​
+\]</span></p></li>
+<li><p><strong>Region-interaction model:</strong></p></li>
+</ol>
+<p><span class="math display">\[
+LifeExp_{ct}​=(β_0​+β_{0r}​)+(β_1​+β_{1r}​)Gini_{ct}​+(β_2​+β_{2r}​)log(GDP_{ct}​)+γ_t​+ε_{ct}​
+\]</span></p>
+<p>where <span class="math inline">\(r\)</span> indexes regions, and $γ_t$​ are year effects.</p>
+<p><strong>Assumptions (linear models):</strong></p>
+<ul>
+<li><p>Linearity between predictors and life expectancy</p></li>
+<li><p>Additivity of effects within each region specification</p></li>
+<li><p>Homoskedasticity and approximate normality of residuals (checked with plots)</p></li>
+<li><p>Independence of errors within country–year pairs, with clustering at the country level to account for repeated observations over time</p></li>
+<li><p>No omitted variables that are strongly correlated with both predictors and the outcome after controlling for year and region</p></li>
+</ul>
+</section>
+<section id="b.2-baseline-panel-model" class="level2">
+<h2 class="anchored" data-anchor-id="b.2-baseline-panel-model"><strong>B.2 Baseline panel model</strong></h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Baseline linear panel model of life expectancy on inequality, log(GDP), and year fixed effects (cluster-robust standard errors).</caption>
+<colgroup>
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+<th style="text-align: right;">conf.low</th>
+<th style="text-align: right;">conf.high</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">13.051</td>
+<td style="text-align: right;">3.580</td>
+<td style="text-align: right;">3.645</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">6.033</td>
+<td style="text-align: right;">20.068</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gini</td>
+<td style="text-align: left;">Gini</td>
+<td style="text-align: right;">0.018</td>
+<td style="text-align: right;">0.041</td>
+<td style="text-align: right;">0.447</td>
+<td style="text-align: right;">0.655</td>
+<td style="text-align: right;">-0.062</td>
+<td style="text-align: right;">0.098</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">log_GDP</td>
+<td style="text-align: left;">log_GDP</td>
+<td style="text-align: right;">6.529</td>
+<td style="text-align: right;">0.322</td>
+<td style="text-align: right;">20.304</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">5.899</td>
+<td style="text-align: right;">7.159</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1991</td>
+<td style="text-align: left;">Year_f1991</td>
+<td style="text-align: right;">-3.382</td>
+<td style="text-align: right;">1.245</td>
+<td style="text-align: right;">-2.716</td>
+<td style="text-align: right;">0.007</td>
+<td style="text-align: right;">-5.822</td>
+<td style="text-align: right;">-0.942</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f1992</td>
+<td style="text-align: left;">Year_f1992</td>
+<td style="text-align: right;">-3.068</td>
+<td style="text-align: right;">1.158</td>
+<td style="text-align: right;">-2.650</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">-5.337</td>
+<td style="text-align: right;">-0.798</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1993</td>
+<td style="text-align: left;">Year_f1993</td>
+<td style="text-align: right;">-2.878</td>
+<td style="text-align: right;">1.015</td>
+<td style="text-align: right;">-2.836</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">-4.866</td>
+<td style="text-align: right;">-0.889</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f1994</td>
+<td style="text-align: left;">Year_f1994</td>
+<td style="text-align: right;">-3.165</td>
+<td style="text-align: right;">1.092</td>
+<td style="text-align: right;">-2.897</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">-5.306</td>
+<td style="text-align: right;">-1.024</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1995</td>
+<td style="text-align: left;">Year_f1995</td>
+<td style="text-align: right;">-1.850</td>
+<td style="text-align: right;">0.862</td>
+<td style="text-align: right;">-2.147</td>
+<td style="text-align: right;">0.032</td>
+<td style="text-align: right;">-3.540</td>
+<td style="text-align: right;">-0.161</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f1996</td>
+<td style="text-align: left;">Year_f1996</td>
+<td style="text-align: right;">-2.340</td>
+<td style="text-align: right;">1.041</td>
+<td style="text-align: right;">-2.249</td>
+<td style="text-align: right;">0.025</td>
+<td style="text-align: right;">-4.380</td>
+<td style="text-align: right;">-0.300</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1997</td>
+<td style="text-align: left;">Year_f1997</td>
+<td style="text-align: right;">-1.400</td>
+<td style="text-align: right;">1.096</td>
+<td style="text-align: right;">-1.277</td>
+<td style="text-align: right;">0.202</td>
+<td style="text-align: right;">-3.548</td>
+<td style="text-align: right;">0.749</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f1998</td>
+<td style="text-align: left;">Year_f1998</td>
+<td style="text-align: right;">-2.696</td>
+<td style="text-align: right;">1.014</td>
+<td style="text-align: right;">-2.658</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: right;">-4.683</td>
+<td style="text-align: right;">-0.708</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1999</td>
+<td style="text-align: left;">Year_f1999</td>
+<td style="text-align: right;">-0.743</td>
+<td style="text-align: right;">0.810</td>
+<td style="text-align: right;">-0.918</td>
+<td style="text-align: right;">0.359</td>
+<td style="text-align: right;">-2.331</td>
+<td style="text-align: right;">0.844</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2000</td>
+<td style="text-align: left;">Year_f2000</td>
+<td style="text-align: right;">-2.311</td>
+<td style="text-align: right;">1.099</td>
+<td style="text-align: right;">-2.102</td>
+<td style="text-align: right;">0.036</td>
+<td style="text-align: right;">-4.466</td>
+<td style="text-align: right;">-0.156</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2001</td>
+<td style="text-align: left;">Year_f2001</td>
+<td style="text-align: right;">-1.296</td>
+<td style="text-align: right;">1.008</td>
+<td style="text-align: right;">-1.286</td>
+<td style="text-align: right;">0.199</td>
+<td style="text-align: right;">-3.272</td>
+<td style="text-align: right;">0.679</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2002</td>
+<td style="text-align: left;">Year_f2002</td>
+<td style="text-align: right;">-2.195</td>
+<td style="text-align: right;">1.061</td>
+<td style="text-align: right;">-2.069</td>
+<td style="text-align: right;">0.039</td>
+<td style="text-align: right;">-4.275</td>
+<td style="text-align: right;">-0.115</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2003</td>
+<td style="text-align: left;">Year_f2003</td>
+<td style="text-align: right;">-2.187</td>
+<td style="text-align: right;">1.064</td>
+<td style="text-align: right;">-2.055</td>
+<td style="text-align: right;">0.040</td>
+<td style="text-align: right;">-4.273</td>
+<td style="text-align: right;">-0.101</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2004</td>
+<td style="text-align: left;">Year_f2004</td>
+<td style="text-align: right;">-1.525</td>
+<td style="text-align: right;">0.955</td>
+<td style="text-align: right;">-1.596</td>
+<td style="text-align: right;">0.111</td>
+<td style="text-align: right;">-3.397</td>
+<td style="text-align: right;">0.347</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2005</td>
+<td style="text-align: left;">Year_f2005</td>
+<td style="text-align: right;">-2.050</td>
+<td style="text-align: right;">0.955</td>
+<td style="text-align: right;">-2.146</td>
+<td style="text-align: right;">0.032</td>
+<td style="text-align: right;">-3.922</td>
+<td style="text-align: right;">-0.178</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2006</td>
+<td style="text-align: left;">Year_f2006</td>
+<td style="text-align: right;">-2.100</td>
+<td style="text-align: right;">0.952</td>
+<td style="text-align: right;">-2.206</td>
+<td style="text-align: right;">0.028</td>
+<td style="text-align: right;">-3.967</td>
+<td style="text-align: right;">-0.234</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2007</td>
+<td style="text-align: left;">Year_f2007</td>
+<td style="text-align: right;">-2.309</td>
+<td style="text-align: right;">0.957</td>
+<td style="text-align: right;">-2.412</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">-4.185</td>
+<td style="text-align: right;">-0.433</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2008</td>
+<td style="text-align: left;">Year_f2008</td>
+<td style="text-align: right;">-2.736</td>
+<td style="text-align: right;">1.021</td>
+<td style="text-align: right;">-2.679</td>
+<td style="text-align: right;">0.007</td>
+<td style="text-align: right;">-4.738</td>
+<td style="text-align: right;">-0.734</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2009</td>
+<td style="text-align: left;">Year_f2009</td>
+<td style="text-align: right;">-2.615</td>
+<td style="text-align: right;">1.049</td>
+<td style="text-align: right;">-2.493</td>
+<td style="text-align: right;">0.013</td>
+<td style="text-align: right;">-4.671</td>
+<td style="text-align: right;">-0.560</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2010</td>
+<td style="text-align: left;">Year_f2010</td>
+<td style="text-align: right;">-1.944</td>
+<td style="text-align: right;">0.983</td>
+<td style="text-align: right;">-1.978</td>
+<td style="text-align: right;">0.048</td>
+<td style="text-align: right;">-3.870</td>
+<td style="text-align: right;">-0.017</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2011</td>
+<td style="text-align: left;">Year_f2011</td>
+<td style="text-align: right;">-2.310</td>
+<td style="text-align: right;">0.944</td>
+<td style="text-align: right;">-2.446</td>
+<td style="text-align: right;">0.015</td>
+<td style="text-align: right;">-4.161</td>
+<td style="text-align: right;">-0.459</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2012</td>
+<td style="text-align: left;">Year_f2012</td>
+<td style="text-align: right;">-2.240</td>
+<td style="text-align: right;">0.984</td>
+<td style="text-align: right;">-2.276</td>
+<td style="text-align: right;">0.023</td>
+<td style="text-align: right;">-4.169</td>
+<td style="text-align: right;">-0.311</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2013</td>
+<td style="text-align: left;">Year_f2013</td>
+<td style="text-align: right;">-1.788</td>
+<td style="text-align: right;">0.953</td>
+<td style="text-align: right;">-1.877</td>
+<td style="text-align: right;">0.061</td>
+<td style="text-align: right;">-3.655</td>
+<td style="text-align: right;">0.079</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2014</td>
+<td style="text-align: left;">Year_f2014</td>
+<td style="text-align: right;">-1.963</td>
+<td style="text-align: right;">0.957</td>
+<td style="text-align: right;">-2.051</td>
+<td style="text-align: right;">0.040</td>
+<td style="text-align: right;">-3.838</td>
+<td style="text-align: right;">-0.087</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2015</td>
+<td style="text-align: left;">Year_f2015</td>
+<td style="text-align: right;">-2.442</td>
+<td style="text-align: right;">1.020</td>
+<td style="text-align: right;">-2.394</td>
+<td style="text-align: right;">0.017</td>
+<td style="text-align: right;">-4.441</td>
+<td style="text-align: right;">-0.443</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2016</td>
+<td style="text-align: left;">Year_f2016</td>
+<td style="text-align: right;">-1.936</td>
+<td style="text-align: right;">0.993</td>
+<td style="text-align: right;">-1.950</td>
+<td style="text-align: right;">0.051</td>
+<td style="text-align: right;">-3.883</td>
+<td style="text-align: right;">0.010</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2017</td>
+<td style="text-align: left;">Year_f2017</td>
+<td style="text-align: right;">-2.743</td>
+<td style="text-align: right;">1.004</td>
+<td style="text-align: right;">-2.731</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">-4.711</td>
+<td style="text-align: right;">-0.774</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2018</td>
+<td style="text-align: left;">Year_f2018</td>
+<td style="text-align: right;">-3.106</td>
+<td style="text-align: right;">1.024</td>
+<td style="text-align: right;">-3.035</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">-5.112</td>
+<td style="text-align: right;">-1.100</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2019</td>
+<td style="text-align: left;">Year_f2019</td>
+<td style="text-align: right;">-2.376</td>
+<td style="text-align: right;">0.976</td>
+<td style="text-align: right;">-2.434</td>
+<td style="text-align: right;">0.015</td>
+<td style="text-align: right;">-4.290</td>
+<td style="text-align: right;">-0.463</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2020</td>
+<td style="text-align: left;">Year_f2020</td>
+<td style="text-align: right;">-3.465</td>
+<td style="text-align: right;">1.003</td>
+<td style="text-align: right;">-3.454</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">-5.432</td>
+<td style="text-align: right;">-1.499</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2021</td>
+<td style="text-align: left;">Year_f2021</td>
+<td style="text-align: right;">-5.304</td>
+<td style="text-align: right;">1.005</td>
+<td style="text-align: right;">-5.278</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">-7.274</td>
+<td style="text-align: right;">-3.334</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2022</td>
+<td style="text-align: left;">Year_f2022</td>
+<td style="text-align: right;">-2.992</td>
+<td style="text-align: right;">1.088</td>
+<td style="text-align: right;">-2.751</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">-5.123</td>
+<td style="text-align: right;">-0.860</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2023</td>
+<td style="text-align: left;">Year_f2023</td>
+<td style="text-align: right;">-2.174</td>
+<td style="text-align: right;">1.461</td>
+<td style="text-align: right;">-1.488</td>
+<td style="text-align: right;">0.137</td>
+<td style="text-align: right;">-5.037</td>
+<td style="text-align: right;">0.689</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><strong>Brief Interpretation</strong></p>
+<ul>
+<li><p>The coefficient on log_GDP is positive and highly significant. Higher GDP per capita is associated with higher life expectancy, holding inequality and year constant.</p></li>
+<li><p>The coefficient on Gini index is small and negative in this specification. Once we control for GDP per capita and year, higher inequality is weakly associated with lower life expectancy.</p></li>
+</ul>
+</section>
+<section id="b.3-region-interaction-model" class="level2">
+<h2 class="anchored" data-anchor-id="b.3-region-interaction-model"><strong>B.3 Region-interaction model</strong></h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Linear model of life expectancy with interactions between inequality, log(GDP), and world region (cluster-robust standard errors).</caption>
+<colgroup>
+<col style="width: 29%">
+<col style="width: 29%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+<th style="text-align: right;">conf.low</th>
+<th style="text-align: right;">conf.high</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">25.857</td>
+<td style="text-align: right;">7.746</td>
+<td style="text-align: right;">3.338</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">10.675</td>
+<td style="text-align: right;">41.039</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gini</td>
+<td style="text-align: left;">Gini</td>
+<td style="text-align: right;">0.118</td>
+<td style="text-align: right;">0.103</td>
+<td style="text-align: right;">1.142</td>
+<td style="text-align: right;">0.254</td>
+<td style="text-align: right;">-0.084</td>
+<td style="text-align: right;">0.320</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">log_GDP</td>
+<td style="text-align: left;">log_GDP</td>
+<td style="text-align: right;">4.612</td>
+<td style="text-align: right;">0.765</td>
+<td style="text-align: right;">6.029</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">3.113</td>
+<td style="text-align: right;">6.112</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RegionEurope &amp; Central Asia</td>
+<td style="text-align: left;">RegionEurope &amp; Central Asia</td>
+<td style="text-align: right;">1.649</td>
+<td style="text-align: right;">10.029</td>
+<td style="text-align: right;">0.164</td>
+<td style="text-align: right;">0.869</td>
+<td style="text-align: right;">-18.008</td>
+<td style="text-align: right;">21.305</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">RegionLatin America &amp; Caribbean</td>
+<td style="text-align: left;">RegionLatin America &amp; Caribbean</td>
+<td style="text-align: right;">7.308</td>
+<td style="text-align: right;">10.373</td>
+<td style="text-align: right;">0.704</td>
+<td style="text-align: right;">0.481</td>
+<td style="text-align: right;">-13.023</td>
+<td style="text-align: right;">27.639</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RegionMiddle East &amp; North Africa</td>
+<td style="text-align: left;">RegionMiddle East &amp; North Africa</td>
+<td style="text-align: right;">-20.248</td>
+<td style="text-align: right;">10.017</td>
+<td style="text-align: right;">-2.021</td>
+<td style="text-align: right;">0.043</td>
+<td style="text-align: right;">-39.880</td>
+<td style="text-align: right;">-0.616</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">RegionNorth America</td>
+<td style="text-align: left;">RegionNorth America</td>
+<td style="text-align: right;">11.437</td>
+<td style="text-align: right;">10.587</td>
+<td style="text-align: right;">1.080</td>
+<td style="text-align: right;">0.280</td>
+<td style="text-align: right;">-9.313</td>
+<td style="text-align: right;">32.187</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RegionSouth Asia</td>
+<td style="text-align: left;">RegionSouth Asia</td>
+<td style="text-align: right;">-19.097</td>
+<td style="text-align: right;">9.737</td>
+<td style="text-align: right;">-1.961</td>
+<td style="text-align: right;">0.050</td>
+<td style="text-align: right;">-38.182</td>
+<td style="text-align: right;">-0.013</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">RegionSub-Saharan Africa</td>
+<td style="text-align: left;">RegionSub-Saharan Africa</td>
+<td style="text-align: right;">6.960</td>
+<td style="text-align: right;">8.771</td>
+<td style="text-align: right;">0.794</td>
+<td style="text-align: right;">0.428</td>
+<td style="text-align: right;">-10.230</td>
+<td style="text-align: right;">24.151</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1991</td>
+<td style="text-align: left;">Year_f1991</td>
+<td style="text-align: right;">-1.055</td>
+<td style="text-align: right;">0.844</td>
+<td style="text-align: right;">-1.250</td>
+<td style="text-align: right;">0.211</td>
+<td style="text-align: right;">-2.710</td>
+<td style="text-align: right;">0.599</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f1992</td>
+<td style="text-align: left;">Year_f1992</td>
+<td style="text-align: right;">-1.716</td>
+<td style="text-align: right;">0.914</td>
+<td style="text-align: right;">-1.878</td>
+<td style="text-align: right;">0.061</td>
+<td style="text-align: right;">-3.507</td>
+<td style="text-align: right;">0.075</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1993</td>
+<td style="text-align: left;">Year_f1993</td>
+<td style="text-align: right;">-0.532</td>
+<td style="text-align: right;">0.654</td>
+<td style="text-align: right;">-0.814</td>
+<td style="text-align: right;">0.416</td>
+<td style="text-align: right;">-1.813</td>
+<td style="text-align: right;">0.749</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f1994</td>
+<td style="text-align: left;">Year_f1994</td>
+<td style="text-align: right;">-0.388</td>
+<td style="text-align: right;">0.880</td>
+<td style="text-align: right;">-0.440</td>
+<td style="text-align: right;">0.660</td>
+<td style="text-align: right;">-2.113</td>
+<td style="text-align: right;">1.338</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1995</td>
+<td style="text-align: left;">Year_f1995</td>
+<td style="text-align: right;">-0.775</td>
+<td style="text-align: right;">0.690</td>
+<td style="text-align: right;">-1.124</td>
+<td style="text-align: right;">0.261</td>
+<td style="text-align: right;">-2.128</td>
+<td style="text-align: right;">0.577</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f1996</td>
+<td style="text-align: left;">Year_f1996</td>
+<td style="text-align: right;">-1.297</td>
+<td style="text-align: right;">0.737</td>
+<td style="text-align: right;">-1.761</td>
+<td style="text-align: right;">0.078</td>
+<td style="text-align: right;">-2.741</td>
+<td style="text-align: right;">0.146</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1997</td>
+<td style="text-align: left;">Year_f1997</td>
+<td style="text-align: right;">-0.153</td>
+<td style="text-align: right;">0.750</td>
+<td style="text-align: right;">-0.205</td>
+<td style="text-align: right;">0.838</td>
+<td style="text-align: right;">-1.623</td>
+<td style="text-align: right;">1.316</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f1998</td>
+<td style="text-align: left;">Year_f1998</td>
+<td style="text-align: right;">-1.800</td>
+<td style="text-align: right;">0.761</td>
+<td style="text-align: right;">-2.366</td>
+<td style="text-align: right;">0.018</td>
+<td style="text-align: right;">-3.291</td>
+<td style="text-align: right;">-0.309</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f1999</td>
+<td style="text-align: left;">Year_f1999</td>
+<td style="text-align: right;">-0.294</td>
+<td style="text-align: right;">0.667</td>
+<td style="text-align: right;">-0.441</td>
+<td style="text-align: right;">0.659</td>
+<td style="text-align: right;">-1.602</td>
+<td style="text-align: right;">1.014</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2000</td>
+<td style="text-align: left;">Year_f2000</td>
+<td style="text-align: right;">-0.537</td>
+<td style="text-align: right;">0.796</td>
+<td style="text-align: right;">-0.674</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">-2.097</td>
+<td style="text-align: right;">1.024</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2001</td>
+<td style="text-align: left;">Year_f2001</td>
+<td style="text-align: right;">-0.076</td>
+<td style="text-align: right;">0.884</td>
+<td style="text-align: right;">-0.086</td>
+<td style="text-align: right;">0.931</td>
+<td style="text-align: right;">-1.808</td>
+<td style="text-align: right;">1.656</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2002</td>
+<td style="text-align: left;">Year_f2002</td>
+<td style="text-align: right;">-0.809</td>
+<td style="text-align: right;">0.792</td>
+<td style="text-align: right;">-1.021</td>
+<td style="text-align: right;">0.307</td>
+<td style="text-align: right;">-2.362</td>
+<td style="text-align: right;">0.744</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2003</td>
+<td style="text-align: left;">Year_f2003</td>
+<td style="text-align: right;">-0.720</td>
+<td style="text-align: right;">0.772</td>
+<td style="text-align: right;">-0.933</td>
+<td style="text-align: right;">0.351</td>
+<td style="text-align: right;">-2.232</td>
+<td style="text-align: right;">0.793</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2004</td>
+<td style="text-align: left;">Year_f2004</td>
+<td style="text-align: right;">0.034</td>
+<td style="text-align: right;">0.767</td>
+<td style="text-align: right;">0.044</td>
+<td style="text-align: right;">0.965</td>
+<td style="text-align: right;">-1.469</td>
+<td style="text-align: right;">1.536</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2005</td>
+<td style="text-align: left;">Year_f2005</td>
+<td style="text-align: right;">0.076</td>
+<td style="text-align: right;">0.752</td>
+<td style="text-align: right;">0.101</td>
+<td style="text-align: right;">0.919</td>
+<td style="text-align: right;">-1.397</td>
+<td style="text-align: right;">1.550</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2006</td>
+<td style="text-align: left;">Year_f2006</td>
+<td style="text-align: right;">-0.387</td>
+<td style="text-align: right;">0.798</td>
+<td style="text-align: right;">-0.485</td>
+<td style="text-align: right;">0.628</td>
+<td style="text-align: right;">-1.950</td>
+<td style="text-align: right;">1.176</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2007</td>
+<td style="text-align: left;">Year_f2007</td>
+<td style="text-align: right;">-0.424</td>
+<td style="text-align: right;">0.815</td>
+<td style="text-align: right;">-0.520</td>
+<td style="text-align: right;">0.603</td>
+<td style="text-align: right;">-2.021</td>
+<td style="text-align: right;">1.174</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2008</td>
+<td style="text-align: left;">Year_f2008</td>
+<td style="text-align: right;">-0.402</td>
+<td style="text-align: right;">0.822</td>
+<td style="text-align: right;">-0.489</td>
+<td style="text-align: right;">0.625</td>
+<td style="text-align: right;">-2.014</td>
+<td style="text-align: right;">1.210</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2009</td>
+<td style="text-align: left;">Year_f2009</td>
+<td style="text-align: right;">-0.365</td>
+<td style="text-align: right;">0.807</td>
+<td style="text-align: right;">-0.453</td>
+<td style="text-align: right;">0.651</td>
+<td style="text-align: right;">-1.948</td>
+<td style="text-align: right;">1.217</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2010</td>
+<td style="text-align: left;">Year_f2010</td>
+<td style="text-align: right;">0.388</td>
+<td style="text-align: right;">0.817</td>
+<td style="text-align: right;">0.475</td>
+<td style="text-align: right;">0.635</td>
+<td style="text-align: right;">-1.213</td>
+<td style="text-align: right;">1.990</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2011</td>
+<td style="text-align: left;">Year_f2011</td>
+<td style="text-align: right;">0.030</td>
+<td style="text-align: right;">0.800</td>
+<td style="text-align: right;">0.037</td>
+<td style="text-align: right;">0.970</td>
+<td style="text-align: right;">-1.538</td>
+<td style="text-align: right;">1.598</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2012</td>
+<td style="text-align: left;">Year_f2012</td>
+<td style="text-align: right;">-0.197</td>
+<td style="text-align: right;">0.844</td>
+<td style="text-align: right;">-0.234</td>
+<td style="text-align: right;">0.815</td>
+<td style="text-align: right;">-1.851</td>
+<td style="text-align: right;">1.457</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2013</td>
+<td style="text-align: left;">Year_f2013</td>
+<td style="text-align: right;">0.324</td>
+<td style="text-align: right;">0.839</td>
+<td style="text-align: right;">0.386</td>
+<td style="text-align: right;">0.700</td>
+<td style="text-align: right;">-1.321</td>
+<td style="text-align: right;">1.968</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2014</td>
+<td style="text-align: left;">Year_f2014</td>
+<td style="text-align: right;">0.595</td>
+<td style="text-align: right;">0.833</td>
+<td style="text-align: right;">0.714</td>
+<td style="text-align: right;">0.475</td>
+<td style="text-align: right;">-1.038</td>
+<td style="text-align: right;">2.227</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2015</td>
+<td style="text-align: left;">Year_f2015</td>
+<td style="text-align: right;">0.363</td>
+<td style="text-align: right;">0.815</td>
+<td style="text-align: right;">0.445</td>
+<td style="text-align: right;">0.656</td>
+<td style="text-align: right;">-1.235</td>
+<td style="text-align: right;">1.961</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2016</td>
+<td style="text-align: left;">Year_f2016</td>
+<td style="text-align: right;">0.636</td>
+<td style="text-align: right;">0.882</td>
+<td style="text-align: right;">0.721</td>
+<td style="text-align: right;">0.471</td>
+<td style="text-align: right;">-1.092</td>
+<td style="text-align: right;">2.364</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2017</td>
+<td style="text-align: left;">Year_f2017</td>
+<td style="text-align: right;">-0.206</td>
+<td style="text-align: right;">0.855</td>
+<td style="text-align: right;">-0.241</td>
+<td style="text-align: right;">0.810</td>
+<td style="text-align: right;">-1.881</td>
+<td style="text-align: right;">1.469</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2018</td>
+<td style="text-align: left;">Year_f2018</td>
+<td style="text-align: right;">-0.168</td>
+<td style="text-align: right;">0.874</td>
+<td style="text-align: right;">-0.192</td>
+<td style="text-align: right;">0.848</td>
+<td style="text-align: right;">-1.880</td>
+<td style="text-align: right;">1.545</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2019</td>
+<td style="text-align: left;">Year_f2019</td>
+<td style="text-align: right;">0.256</td>
+<td style="text-align: right;">0.913</td>
+<td style="text-align: right;">0.280</td>
+<td style="text-align: right;">0.780</td>
+<td style="text-align: right;">-1.534</td>
+<td style="text-align: right;">2.045</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2020</td>
+<td style="text-align: left;">Year_f2020</td>
+<td style="text-align: right;">-0.870</td>
+<td style="text-align: right;">0.895</td>
+<td style="text-align: right;">-0.972</td>
+<td style="text-align: right;">0.331</td>
+<td style="text-align: right;">-2.624</td>
+<td style="text-align: right;">0.885</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2021</td>
+<td style="text-align: left;">Year_f2021</td>
+<td style="text-align: right;">-2.177</td>
+<td style="text-align: right;">0.939</td>
+<td style="text-align: right;">-2.320</td>
+<td style="text-align: right;">0.020</td>
+<td style="text-align: right;">-4.017</td>
+<td style="text-align: right;">-0.338</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Year_f2022</td>
+<td style="text-align: left;">Year_f2022</td>
+<td style="text-align: right;">-0.690</td>
+<td style="text-align: right;">1.095</td>
+<td style="text-align: right;">-0.631</td>
+<td style="text-align: right;">0.528</td>
+<td style="text-align: right;">-2.836</td>
+<td style="text-align: right;">1.455</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Year_f2023</td>
+<td style="text-align: left;">Year_f2023</td>
+<td style="text-align: right;">0.113</td>
+<td style="text-align: right;">1.316</td>
+<td style="text-align: right;">0.086</td>
+<td style="text-align: right;">0.931</td>
+<td style="text-align: right;">-2.467</td>
+<td style="text-align: right;">2.693</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gini:RegionEurope &amp; Central Asia</td>
+<td style="text-align: left;">Gini:RegionEurope &amp; Central Asia</td>
+<td style="text-align: right;">-0.066</td>
+<td style="text-align: right;">0.127</td>
+<td style="text-align: right;">-0.520</td>
+<td style="text-align: right;">0.603</td>
+<td style="text-align: right;">-0.314</td>
+<td style="text-align: right;">0.182</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gini:RegionLatin America &amp; Caribbean</td>
+<td style="text-align: left;">Gini:RegionLatin America &amp; Caribbean</td>
+<td style="text-align: right;">-0.120</td>
+<td style="text-align: right;">0.125</td>
+<td style="text-align: right;">-0.961</td>
+<td style="text-align: right;">0.337</td>
+<td style="text-align: right;">-0.365</td>
+<td style="text-align: right;">0.125</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gini:RegionMiddle East &amp; North Africa</td>
+<td style="text-align: left;">Gini:RegionMiddle East &amp; North Africa</td>
+<td style="text-align: right;">0.047</td>
+<td style="text-align: right;">0.146</td>
+<td style="text-align: right;">0.324</td>
+<td style="text-align: right;">0.746</td>
+<td style="text-align: right;">-0.239</td>
+<td style="text-align: right;">0.333</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gini:RegionNorth America</td>
+<td style="text-align: left;">Gini:RegionNorth America</td>
+<td style="text-align: right;">-0.066</td>
+<td style="text-align: right;">0.154</td>
+<td style="text-align: right;">-0.428</td>
+<td style="text-align: right;">0.668</td>
+<td style="text-align: right;">-0.367</td>
+<td style="text-align: right;">0.235</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gini:RegionSouth Asia</td>
+<td style="text-align: left;">Gini:RegionSouth Asia</td>
+<td style="text-align: right;">0.158</td>
+<td style="text-align: right;">0.165</td>
+<td style="text-align: right;">0.959</td>
+<td style="text-align: right;">0.338</td>
+<td style="text-align: right;">-0.165</td>
+<td style="text-align: right;">0.480</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gini:RegionSub-Saharan Africa</td>
+<td style="text-align: left;">Gini:RegionSub-Saharan Africa</td>
+<td style="text-align: right;">-0.364</td>
+<td style="text-align: right;">0.115</td>
+<td style="text-align: right;">-3.155</td>
+<td style="text-align: right;">0.002</td>
+<td style="text-align: right;">-0.590</td>
+<td style="text-align: right;">-0.138</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">log_GDP:RegionEurope &amp; Central Asia</td>
+<td style="text-align: left;">log_GDP:RegionEurope &amp; Central Asia</td>
+<td style="text-align: right;">0.160</td>
+<td style="text-align: right;">0.878</td>
+<td style="text-align: right;">0.182</td>
+<td style="text-align: right;">0.856</td>
+<td style="text-align: right;">-1.562</td>
+<td style="text-align: right;">1.882</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">log_GDP:RegionLatin America &amp; Caribbean</td>
+<td style="text-align: left;">log_GDP:RegionLatin America &amp; Caribbean</td>
+<td style="text-align: right;">-0.198</td>
+<td style="text-align: right;">0.860</td>
+<td style="text-align: right;">-0.230</td>
+<td style="text-align: right;">0.818</td>
+<td style="text-align: right;">-1.884</td>
+<td style="text-align: right;">1.488</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">log_GDP:RegionMiddle East &amp; North Africa</td>
+<td style="text-align: left;">log_GDP:RegionMiddle East &amp; North Africa</td>
+<td style="text-align: right;">2.069</td>
+<td style="text-align: right;">0.905</td>
+<td style="text-align: right;">2.287</td>
+<td style="text-align: right;">0.022</td>
+<td style="text-align: right;">0.295</td>
+<td style="text-align: right;">3.842</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">log_GDP:RegionNorth America</td>
+<td style="text-align: left;">log_GDP:RegionNorth America</td>
+<td style="text-align: right;">-0.643</td>
+<td style="text-align: right;">0.944</td>
+<td style="text-align: right;">-0.681</td>
+<td style="text-align: right;">0.496</td>
+<td style="text-align: right;">-2.493</td>
+<td style="text-align: right;">1.208</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">log_GDP:RegionSouth Asia</td>
+<td style="text-align: left;">log_GDP:RegionSouth Asia</td>
+<td style="text-align: right;">1.557</td>
+<td style="text-align: right;">0.865</td>
+<td style="text-align: right;">1.800</td>
+<td style="text-align: right;">0.072</td>
+<td style="text-align: right;">-0.139</td>
+<td style="text-align: right;">3.252</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">log_GDP:RegionSub-Saharan Africa</td>
+<td style="text-align: left;">log_GDP:RegionSub-Saharan Africa</td>
+<td style="text-align: right;">-0.053</td>
+<td style="text-align: right;">0.971</td>
+<td style="text-align: right;">-0.055</td>
+<td style="text-align: right;">0.956</td>
+<td style="text-align: right;">-1.957</td>
+<td style="text-align: right;">1.851</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><strong>Brief Interpretation</strong></p>
+<ul>
+<li><p>The main Gini index and log_GDP coefficients correspond to the reference region (for example, East Asia &amp; Pacific).</p></li>
+<li><p>Interaction terms like <em>Gini:RegionSub-Saharan Africa</em> show how the inequality–life expectancy slope differs in that region compared to the reference.</p></li>
+<li><p>Results indicate that the association between inequality and life expectancy varies by region, satisfying the requirement to use at least one interaction term and providing more nuanced policy insight.</p></li>
+</ul>
+</section>
+<section id="b.4-model-assessment-and-changes" class="level2">
+<h2 class="anchored" data-anchor-id="b.4-model-assessment-and-changes"><strong>B.4 Model assessment and changes</strong></h2>
+<p>We assessed model fit and assumptions using residual diagnostics and influence checks.</p>
+<ol type="1">
+<li><p><strong>GDP transformation decision</strong> Residual plots showed non-linearity when using raw GDP but a more stable pattern after log-transforming GDP. That motivated the use of log(GDP) in all final models instead of raw GDP.</p></li>
+<li><p><strong>Residual diagnostics for interaction model</strong></p></li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Brief Interpretation</strong></p>
+<ul>
+<li>Residuals versus fitted values show no strong curvature or funnel shape.</li>
+</ul>
+<!-- -->
+<ul>
+<li>The Q–Q plot shows some deviation in the tails, but not enough to overturn the linear model conclusions.</li>
+</ul>
+<ol start="3" type="1">
+<li><strong>Influential observations</strong></li>
+</ol>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Number of potentially influential country–year observations: 157 </code></pre>
+</div>
+</div>
+<p><strong>Brief Interpretation</strong>:</p>
+<p>Refitting the interaction model without these high-leverage points produced similar coefficients for Gini index and log(GDP), so we retained the full-sample interaction model as the primary specification.</p>
+</section>
 </section>
 <section id="appendix-c.-models-for-research-question-2" class="level1">
 <h1><strong>Appendix C. Models for Research Question 2</strong></h1>
+<section id="c.1-modelling-approach-and-variables" class="level2">
+<h2 class="anchored" data-anchor-id="c.1-modelling-approach-and-variables"><strong>C.1 Modelling approach and variables</strong></h2>
+<p>The outcome for Research Question 2 is the CPIA sustainability rating, which is:</p>
+<ul>
+<li><p>Ordered categories (2.0, 2.5, 3.0, 3.5, 4.0, 4.5)</p></li>
+<li><p>Bounded and discrete, not continuous</p></li>
+</ul>
+<p>Because of this, we use an <strong>ordinal logistic regression (proportional odds model)</strong> instead of a linear model.</p>
+<p><strong>Main predictors:</strong></p>
+<ul>
+<li><p>Gini: Gini index, economic inequality</p></li>
+<li><p>log_GDP: natural log of GDP per capita (PPP, constant)</p></li>
+<li><p>factor(Year): year fixed effects to capture time trends or changes in CPIA scoring</p></li>
+</ul>
+<p>We fitted the model as below:</p>
+<p><span class="math display">\[
+logit{P(Y≤j)}=α_j​−β_1​⋅Gini−β_2​⋅log(GDP)−γ_{Year}​
+\]</span></p>
+<p>where <span class="math inline">\(Y\)</span> is the sustainability rating and <span class="math inline">\(j\)</span> indexes the thresholds.</p>
+<p><strong>Assumptions (ordinal logistic model):</strong></p>
+<ul>
+<li><p>Proportional odds: the effect of each predictor is constant across all cumulative splits of the outcome.</p></li>
+<li><p>Independence of observations (country–year pairs) conditional on predictors.</p></li>
+<li><p>Correct functional form for Gini and log(GDP) (checked with scatterplots and transformation of GDP).</p></li>
+<li><p>No strong unmeasured confounders that are correlated with both inequality, GDP, and sustainability after conditioning on year.</p></li>
+</ul>
+</section>
+<section id="c.2-ordinal-logistic-regression-model" class="level2">
+<h2 class="anchored" data-anchor-id="c.2-ordinal-logistic-regression-model">C.2 Ordinal logistic regression model</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Ordinal logistic regression coefficients (log-odds scale) for sustainability ratings on inequality, log(GDP), and year.</caption>
+<colgroup>
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">conf.low</th>
+<th style="text-align: right;">conf.high</th>
+<th style="text-align: left;">coef.type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Gini</td>
+<td style="text-align: right;">0.074</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">4.624</td>
+<td style="text-align: right;">0.043</td>
+<td style="text-align: right;">0.105</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">log_GDP</td>
+<td style="text-align: right;">0.841</td>
+<td style="text-align: right;">0.183</td>
+<td style="text-align: right;">4.598</td>
+<td style="text-align: right;">0.486</td>
+<td style="text-align: right;">1.204</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2006</td>
+<td style="text-align: right;">0.036</td>
+<td style="text-align: right;">0.602</td>
+<td style="text-align: right;">0.060</td>
+<td style="text-align: right;">-1.149</td>
+<td style="text-align: right;">1.220</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2007</td>
+<td style="text-align: right;">-0.012</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">-0.021</td>
+<td style="text-align: right;">-1.153</td>
+<td style="text-align: right;">1.134</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2008</td>
+<td style="text-align: right;">-0.098</td>
+<td style="text-align: right;">0.649</td>
+<td style="text-align: right;">-0.151</td>
+<td style="text-align: right;">-1.374</td>
+<td style="text-align: right;">1.179</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2009</td>
+<td style="text-align: right;">0.105</td>
+<td style="text-align: right;">0.587</td>
+<td style="text-align: right;">0.179</td>
+<td style="text-align: right;">-1.051</td>
+<td style="text-align: right;">1.259</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2010</td>
+<td style="text-align: right;">0.120</td>
+<td style="text-align: right;">0.553</td>
+<td style="text-align: right;">0.217</td>
+<td style="text-align: right;">-0.966</td>
+<td style="text-align: right;">1.209</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2011</td>
+<td style="text-align: right;">-0.495</td>
+<td style="text-align: right;">0.575</td>
+<td style="text-align: right;">-0.861</td>
+<td style="text-align: right;">-1.626</td>
+<td style="text-align: right;">0.636</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2012</td>
+<td style="text-align: right;">-0.049</td>
+<td style="text-align: right;">0.589</td>
+<td style="text-align: right;">-0.083</td>
+<td style="text-align: right;">-1.204</td>
+<td style="text-align: right;">1.110</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2013</td>
+<td style="text-align: right;">-0.418</td>
+<td style="text-align: right;">0.659</td>
+<td style="text-align: right;">-0.635</td>
+<td style="text-align: right;">-1.713</td>
+<td style="text-align: right;">0.880</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2014</td>
+<td style="text-align: right;">0.069</td>
+<td style="text-align: right;">0.620</td>
+<td style="text-align: right;">0.112</td>
+<td style="text-align: right;">-1.149</td>
+<td style="text-align: right;">1.290</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2015</td>
+<td style="text-align: right;">0.141</td>
+<td style="text-align: right;">0.587</td>
+<td style="text-align: right;">0.240</td>
+<td style="text-align: right;">-1.011</td>
+<td style="text-align: right;">1.295</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2016</td>
+<td style="text-align: right;">0.814</td>
+<td style="text-align: right;">0.670</td>
+<td style="text-align: right;">1.215</td>
+<td style="text-align: right;">-0.498</td>
+<td style="text-align: right;">2.139</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2017</td>
+<td style="text-align: right;">-0.001</td>
+<td style="text-align: right;">0.819</td>
+<td style="text-align: right;">-0.001</td>
+<td style="text-align: right;">-1.604</td>
+<td style="text-align: right;">1.619</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2018</td>
+<td style="text-align: right;">0.767</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">1.319</td>
+<td style="text-align: right;">-0.371</td>
+<td style="text-align: right;">1.916</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2019</td>
+<td style="text-align: right;">0.937</td>
+<td style="text-align: right;">0.638</td>
+<td style="text-align: right;">1.469</td>
+<td style="text-align: right;">-0.311</td>
+<td style="text-align: right;">2.199</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2020</td>
+<td style="text-align: right;">1.277</td>
+<td style="text-align: right;">0.861</td>
+<td style="text-align: right;">1.482</td>
+<td style="text-align: right;">-0.422</td>
+<td style="text-align: right;">2.991</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2021</td>
+<td style="text-align: right;">0.625</td>
+<td style="text-align: right;">0.688</td>
+<td style="text-align: right;">0.909</td>
+<td style="text-align: right;">-0.720</td>
+<td style="text-align: right;">1.986</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2022</td>
+<td style="text-align: right;">0.182</td>
+<td style="text-align: right;">0.805</td>
+<td style="text-align: right;">0.226</td>
+<td style="text-align: right;">-1.397</td>
+<td style="text-align: right;">1.781</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="c.3-odds-ratios-on-the-exponential-scale" class="level2">
+<h2 class="anchored" data-anchor-id="c.3-odds-ratios-on-the-exponential-scale">C.3 Odds ratios on the exponential scale</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Table C.2. Ordinal logistic regression odds ratios for inequality and economic development on sustainability ratings (controlling for year).</caption>
+<colgroup>
+<col style="width: 22%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">conf.low</th>
+<th style="text-align: right;">conf.high</th>
+<th style="text-align: left;">coef.type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Gini</td>
+<td style="text-align: right;">1.076</td>
+<td style="text-align: right;">0.016</td>
+<td style="text-align: right;">4.624</td>
+<td style="text-align: right;">1.044</td>
+<td style="text-align: right;">1.111</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">log_GDP</td>
+<td style="text-align: right;">2.319</td>
+<td style="text-align: right;">0.183</td>
+<td style="text-align: right;">4.598</td>
+<td style="text-align: right;">1.625</td>
+<td style="text-align: right;">3.334</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2006</td>
+<td style="text-align: right;">1.037</td>
+<td style="text-align: right;">0.602</td>
+<td style="text-align: right;">0.060</td>
+<td style="text-align: right;">0.317</td>
+<td style="text-align: right;">3.388</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2007</td>
+<td style="text-align: right;">0.988</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">-0.021</td>
+<td style="text-align: right;">0.316</td>
+<td style="text-align: right;">3.108</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2008</td>
+<td style="text-align: right;">0.907</td>
+<td style="text-align: right;">0.649</td>
+<td style="text-align: right;">-0.151</td>
+<td style="text-align: right;">0.253</td>
+<td style="text-align: right;">3.251</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2009</td>
+<td style="text-align: right;">1.111</td>
+<td style="text-align: right;">0.587</td>
+<td style="text-align: right;">0.179</td>
+<td style="text-align: right;">0.350</td>
+<td style="text-align: right;">3.521</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2010</td>
+<td style="text-align: right;">1.128</td>
+<td style="text-align: right;">0.553</td>
+<td style="text-align: right;">0.217</td>
+<td style="text-align: right;">0.381</td>
+<td style="text-align: right;">3.351</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2011</td>
+<td style="text-align: right;">0.609</td>
+<td style="text-align: right;">0.575</td>
+<td style="text-align: right;">-0.861</td>
+<td style="text-align: right;">0.197</td>
+<td style="text-align: right;">1.889</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2012</td>
+<td style="text-align: right;">0.952</td>
+<td style="text-align: right;">0.589</td>
+<td style="text-align: right;">-0.083</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">3.035</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2013</td>
+<td style="text-align: right;">0.658</td>
+<td style="text-align: right;">0.659</td>
+<td style="text-align: right;">-0.635</td>
+<td style="text-align: right;">0.180</td>
+<td style="text-align: right;">2.410</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2014</td>
+<td style="text-align: right;">1.072</td>
+<td style="text-align: right;">0.620</td>
+<td style="text-align: right;">0.112</td>
+<td style="text-align: right;">0.317</td>
+<td style="text-align: right;">3.632</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2015</td>
+<td style="text-align: right;">1.151</td>
+<td style="text-align: right;">0.587</td>
+<td style="text-align: right;">0.240</td>
+<td style="text-align: right;">0.364</td>
+<td style="text-align: right;">3.651</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2016</td>
+<td style="text-align: right;">2.257</td>
+<td style="text-align: right;">0.670</td>
+<td style="text-align: right;">1.215</td>
+<td style="text-align: right;">0.608</td>
+<td style="text-align: right;">8.495</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2017</td>
+<td style="text-align: right;">0.999</td>
+<td style="text-align: right;">0.819</td>
+<td style="text-align: right;">-0.001</td>
+<td style="text-align: right;">0.201</td>
+<td style="text-align: right;">5.047</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2018</td>
+<td style="text-align: right;">2.154</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">1.319</td>
+<td style="text-align: right;">0.690</td>
+<td style="text-align: right;">6.794</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2019</td>
+<td style="text-align: right;">2.551</td>
+<td style="text-align: right;">0.638</td>
+<td style="text-align: right;">1.469</td>
+<td style="text-align: right;">0.733</td>
+<td style="text-align: right;">9.014</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2020</td>
+<td style="text-align: right;">3.584</td>
+<td style="text-align: right;">0.861</td>
+<td style="text-align: right;">1.482</td>
+<td style="text-align: right;">0.656</td>
+<td style="text-align: right;">19.903</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">factor(Year)2021</td>
+<td style="text-align: right;">1.869</td>
+<td style="text-align: right;">0.688</td>
+<td style="text-align: right;">0.909</td>
+<td style="text-align: right;">0.487</td>
+<td style="text-align: right;">7.289</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">factor(Year)2022</td>
+<td style="text-align: right;">1.200</td>
+<td style="text-align: right;">0.805</td>
+<td style="text-align: right;">0.226</td>
+<td style="text-align: right;">0.247</td>
+<td style="text-align: right;">5.936</td>
+<td style="text-align: left;">coefficient</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><strong>Brief Interpretation</strong>Interpretation (brief):</p>
+<ul>
+<li><p>The Gini index odds ratio &gt; 1 implies that, within this sample of low and lower-middle-income countries, higher income inequality is associated with higher odds of being in a higher CPIA sustainability category.</p></li>
+<li><p>The log_GDP odds ratio &gt; 1 is larger in magnitude, indicating that economic development has a stronger association with sustainability ratings than inequality.</p></li>
+<li><p>Year coefficients capture shifts in CPIA scoring or global environmental policy trends over time.</p></li>
+</ul>
+</section>
+<section id="c.4-model-assessment-and-fit" class="level2">
+<h2 class="anchored" data-anchor-id="c.4-model-assessment-and-fit">C.4 Model assessment and fit</h2>
+<p>We evaluated overall model fit and compared the full model to a null model with only intercepts.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Deviance and AIC for null and full ordinal logistic models.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">model</th>
+<th style="text-align: right;">deviance</th>
+<th style="text-align: right;">AIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Null</td>
+<td style="text-align: right;">727.03</td>
+<td style="text-align: right;">737.03</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Full</td>
+<td style="text-align: right;">683.38</td>
+<td style="text-align: right;">731.38</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Likelihood ratio test (full vs null):</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Chi-square statistic: 43.65 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Degrees of freedom: 19 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  p-value: 0.0010558 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+McFadden pseudo R^2: 0.06 </code></pre>
+</div>
+</div>
+<p><strong>Brief Interpretation</strong></p>
+<ul>
+<li><p>The likelihood ratio test strongly favors the full model over the null model.</p></li>
+<li><p>McFadden’s pseudo R^2 is in the typical range for ordinal logistic models, indicating a meaningful but not complete explanation of sustainability ratings.</p></li>
+</ul>
+</section>
+<section id="c.5-graphical-checks-and-proportional-odds-discussion" class="level2">
+<h2 class="anchored" data-anchor-id="c.5-graphical-checks-and-proportional-odds-discussion">C.5 Graphical checks and proportional odds discussion</h2>
+<p>we also used graphs to understand the relationships between predictors and the ordinal outcome.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final-Report_files/figure-html/unnamed-chunk-24-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Brief Interpretation:</strong></p>
+<p>These plots support the idea that:</p>
+<ul>
+<li><p>Sustainability ratings increase with log(GDP) in a roughly monotonic way.</p></li>
+<li><p>The relationship with Gini index is weaker but still positive.</p></li>
+</ul>
+<p>We rely on the standard proportional odds assumption for interpretation, and there is no obvious violation in the ordered pattern of predicted probabilities across categories.</p>
+</section>
 </section>
 <section id="appendix-d.-technical-next-steps" class="level1">
 <h1><strong>Appendix D. Technical Next Steps</strong></h1>
-<p>Finally, describe limitations that you could not address and what you might do next to improve the analysis. This can include impractical steps in the context of a class project such as “collect more data on X.”</p>
-<p>we could probably talk about using different models if we want and using more complete datasets especially for gini and sustainability</p>
+<p>This project is well-structured with relatively sufficient data, but is still mainly constrained by data availability, measurement choices, and the scope of methods. Below we summarize key limitations and potential next steps for improving the analysis. These steps would refine, rather than overturn, the main conclusions.</p>
+<section id="d.1-data-refinement" class="level2">
+<h2 class="anchored" data-anchor-id="d.1-data-refinement">D.1 Data refinement</h2>
+<p><strong>1. Filling gaps in inequality data (Gini)</strong></p>
+<ul>
+<li><p>The Gini index series is reasonably broad, but there are still missing country–years, especially for low-income countries and earlier periods. This leads to dropping some observations when constructing the panels.</p></li>
+<li><p><strong>Next step:</strong> supplement the current Gini index series with other harmonized sources (for example SWIID or LIS) where available and test whether the main coefficients change when the panel becomes denser. This would mainly improve precision and robustness rather than fundamentally changing the modelling strategy.</p></li>
+</ul>
+<p><strong>2. Additional covariates as sensitivity checks</strong></p>
+<ul>
+<li><p>The current models focus on the main story (inequality, economic productivity, and outcomes) plus time and region controls. Other plausible confounders (education, health spending, governance) are not included, mainly to keep the models interpretable.</p></li>
+<li><p><strong>Next step:</strong> run supplementary models that add a small set of extra controls where data are available. If results remain similar, this would strengthen confidence that the main findings are not driven by omitted-variable bias.</p></li>
+</ul>
 </section>
-<section id="reference" class="level1">
-<h1><strong>Reference</strong></h1>
+<section id="d.2-modelling-refinements" class="level2">
+<h2 class="anchored" data-anchor-id="d.2-modelling-refinements"><strong>D.2 Modelling refinements</strong></h2>
+<p><strong>1. Trying alternative panel structures for life expectancy</strong></p>
+<ul>
+<li><p>The current linear models with year fixed effects already capture much of the variation in life expectancy. However, they treat country differences largely through region and not through explicit country effects.</p></li>
+<li><p><strong>Next step:</strong> estimate a country fixed-effects or random-effects version of the life expectancy model as a robustness check. Comparing these estimates with the existing model would show whether within-country changes over time tell a similar story about inequality, income, and life expectancy, without replacing the current specification as the main result.</p></li>
+</ul>
+<p><strong>2. Exploring mild non-linearity in Gini index and log(GDP)</strong></p>
+<ul>
+<li><p>Using log(GDP) already improves linearity and residual patterns. There may still be gentle curvature, especially at very high or low levels of income or inequality.</p></li>
+<li><p><strong>Next step:</strong> add simple spline terms or quadratic terms for log(GDP) and/or Gini index in secondary models. If these terms are small, we can report that the linear approximation is adequate; if they matter, we can describe the relationship as slightly non-linear while still keeping the interpretation straightforward.</p></li>
+</ul>
+</section>
+</section>
+<section id="references" class="level1">
+<h1><strong>References</strong></h1>
 <ul>
 <li><p>Deaton, A. (2003). Health, inequality, and economic development. <em>Journal of Economic Literature, 41</em>(1), 113–158.</p></li>
 <li><p>Parrish, R. G. (2010). Measuring population health outcomes. <em>Preventing Chronic Disease, 7</em>(4), A71.</p></li>
@@ -543,7 +2438,18 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const onCopySuccess = function(e) {
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -575,29 +2481,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
-  }
-  const getTextToCopy = function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-  }
-  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
-    text: getTextToCopy
   });
-  clipboard.on('success', onCopySuccess);
-  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
-    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
-      text: getTextToCopy,
-      container: window.document.getElementById('quarto-embedded-source-code-modal')
-    });
-    clipboardModal.on('success', onCopySuccess);
-  }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
       var filterRegex = new RegExp('/' + window.location.host + '/');
@@ -605,7 +2489,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
     // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
     for (var i=0; i<links.length; i++) {
       const link = links[i];
       if (!isInternal(link.href)) {

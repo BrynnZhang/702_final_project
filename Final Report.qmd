@@ -6,7 +6,7 @@ execute:
   message: false
   warning: false
 format:
-  pdf:
+  html:
     toc: true
 ---
 
@@ -14,11 +14,11 @@ format:
 
 **Stakeholder: A policy analyst at an international development agency (e.g., the World Bank or UNDP) who advises regional directors on where to prioritize funding and policy support to improve both population health and environmental sustainability in low- and middle-income countries.**
 
-This project uses harmonized international data to examine how income inequality relates to two outcomes central to global development: population health and environmental sustainability. For life expectancy, we analyze 1,721 country-year observations from 2000–2023 and estimate regression models with region-specific effects to assess how the Gini index and log GDP per capita are associated with life expectancy at birth across seven World Bank regions. For environmental sustainability, we study 269 country-year observations from 74 low- and lower-middle-income countries between 2005–2022 using an ordinal logistic regression of the World Bank’s CPIA environmental sustainability rating on income inequality and log GDP per capita. We find that higher GDP per capita is consistently and strongly associated with longer life expectancy in all regions, while the relationship between inequality and life expectancy is weaker and highly region-dependent, with Sub-Saharan Africa standing out as the main region where higher inequality is clearly linked to shorter lives. In contrast, both higher GDP per capita and higher inequality are associated with better CPIA environmental sustainability ratings, with GDP showing the more robust effect. These results suggest that income growth is the most reliable correlate of life expectancy gains, while inequality matters for health in specific regional contexts and does not provide a simple standalone signal for environmental sustainability in low- and lower-middle-income countries.
+This project uses harmonized international data to examine how economic inequality relates to two outcomes central to global development: population health and societal sustainability. For life expectancy, we analyze 1,721 country-year observations from 2000–2023 and estimate regression models with region-specific effects to assess how the Gini index and log GDP per capita are associated with life expectancy at birth across seven World Bank regions. For societal sustainability, we study 269 country-year observations from 74 low- and lower-middle-income countries between 2005–2022 using an ordinal logistic regression of the World Bank’s CPIA environmental sustainability rating on income inequality and log GDP per capita. We find that higher GDP per capita is consistently and strongly associated with longer life expectancy in all regions, while the relationship between inequality and life expectancy is weaker and highly region-dependent, with Sub-Saharan Africa standing out as the main region where higher inequality is clearly linked to shorter lives. In contrast, both higher GDP per capita and higher inequality are associated with better CPIA sustainability ratings, with GDP showing the more robust effect. These results suggest that societal economic growth is the most reliable correlate of life expectancy gains, while inequality matters for health in specific regional contexts and does not provide a simple standalone signal for sustainability in low- and lower-middle-income countries.
 
 # **1.** Problem Motivation
 
-Despite substantial gains in global life expectancy over recent decades, large disparities in population health persist across and within world regions. Life expectancy at birth is widely used as a summary indicator of population health because it aggregates mortality across all ages into a single, interpretable measure of expected longevity (Deaton, 2003; Parrish, 2010). International policy frameworks further emphasize that health outcomes are closely linked to economic development, income inequality, and environmental sustainability, as reflected in the Sustainable Development Goals on health, inequality, and climate and environmental protection (United Nations, 2015). Income inequality is often cited as a key driver of unequal outcomes, with influential work arguing that more unequal societies experience worse health and social outcomes even at similar income levels (Wilkinson & Pickett, 2009; Wilkinson, 2011), while other research stresses that the inequality–health relationship is highly context dependent and shaped by institutions and stages of development (Deaton, 2003). At the same time, international financial institutions increasingly rely on indicators such as the World Bank’s Country Policy and Institutional Assessment (CPIA) environmental sustainability rating to inform concessional financing decisions for low-income countries (World Bank, 2010, 2022). For policymakers with limited resources, a central question is whether income inequality provides useful information, beyond average income, about where population health and environmental sustainability outcomes are most at risk, and where targeted interventions may yield the greatest joint benefits.
+Despite substantial gains in global life expectancy over recent decades, large disparities in population health persist across and within world regions. Life expectancy at birth is widely used as a summary indicator of population health because it aggregates mortality across all ages into a single, interpretable measure of expected longevity (Deaton, 2003; Parrish, 2010). International policy frameworks further emphasize that health outcomes are closely linked to economic development, income inequality, and environmental sustainability, as reflected in the Sustainable Development Goals on health, inequality, and climate and environmental protection (United Nations, 2015). Economic inequality is often cited as a key driver of unequal outcomes, with influential work arguing that more unequal societies experience worse health and social outcomes even at similar income levels (Wilkinson & Pickett, 2009; Wilkinson, 2011), while other research stresses that the inequality–health relationship is highly context dependent and shaped by institutions and stages of development (Deaton, 2003). At the same time, international financial institutions increasingly rely on indicators such as the World Bank’s Country Policy and Institutional Assessment (CPIA) environmental sustainability rating to inform concessional financing decisions for low-income countries (World Bank, 2010, 2022). For policymakers with limited resources, a central question is whether economic inequality provides useful information about where population health and environmental sustainability outcomes are most at risk, and where targeted interventions may yield the greatest joint benefits.
 
 # **2. Results**
 
@@ -113,7 +113,7 @@ rq1_panel3 <- rq1_panel %>%
 
 Across all regions, countries with higher GDP per capita tend to have longer life expectancy. Figure 1 plots life expectancy against log(GDP per capita), with separate trend lines by region. The positive relationship is clear in every region, though the slope differs somewhat. In practical terms, moving from very low to middle levels of GDP per capita is associated with several additional years of expected life at birth. This confirms that economic development is a central correlate of population health in our data.
 
-By contrast, the raw relationship between income inequality and life expectancy is weaker and more mixed. Figure 2 shows life expectancy against the Gini index, again with separate regional trend lines. In many regions, the fitted lines are relatively flat or only slightly sloped, indicating that higher inequality is not systematically associated with higher or lower life expectancy on its own. This suggests that inequality is not a simple standalone predictor of population health once we look across diverse regional contexts.
+By contrast, the raw relationship between income inequality and life expectancy keeping GDP per capita constant is weaker and more mixed. Figure 2 shows life expectancy against the Gini index, again with separate regional trend lines. In many regions, the fitted lines are relatively flat or only slightly sloped, indicating that higher inequality is not systematically associated with higher or lower life expectancy on its own. This suggests that inequality is not a simple standalone predictor of population health once we look across diverse regional contexts.
 
 ```{r}
 ggplot(rq1_panel3, aes(x = log_GDP, y = LifeExp, color = Region)) +
@@ -151,7 +151,7 @@ ggplot(rq1_panel3, aes(x = Gini, y = LifeExp, color = Region)) +
 
 To move beyond these descriptive patterns, we fit a linear regression model with life expectancy as the outcome and the Gini index, log(GDP per capita), region indicators, and year fixed effects as predictors. This model uses the full panel of 1,721 country–year observations and controls for broad regional differences and global time trends.
 
-The model(Table 1) confirms that economic development is strongly and positively associated with life expectancy. Holding inequality, region, and year constant, higher log(GDP per capita) is associated with longer life expectancy, and the confidence interval for this effect is well above zero. In contrast, the global coefficient on the Gini index is much smaller in magnitude and closer to zero, indicating that, on average across regions and years, inequality is only weakly related to life expectancy once income is taken into account.
+The model (Table 1) confirms that economic development is strongly and positively associated with life expectancy. Holding inequality, region, and year constant, higher log(GDP per capita) is associated with longer life expectancy, and the confidence interval for this effect is well above zero. In contrast, the global coefficient on the Gini index is much smaller in magnitude and closer to zero, indicating that, on average across regions and years, inequality is only weakly related to life expectancy once income is taken into account.
 
 ```{r}
 #Linear model for life expectancy (GDP + Gini + region + year)
@@ -220,7 +220,7 @@ Figure 3 summarizes these regression estimates. The bar for log(GDP) sits well a
 
 ### 2.1.3 Regional differences and robustness
 
-Although the global association between inequality and life expectancy is weak, region-specific models reveal important heterogeneity. Allowing the Gini–life expectancy relationship to vary by region shows that Sub-Saharan Africa is the main exception, where higher inequality is clearly associated with shorter life expectancy even after controlling for GDP per capita and year. In other regions, the inequality effect is close to zero and often statistically indistinguishable from no relationship. Robustness checks indicate that these results are not driven by a small number of influential country-year observations: excluding such points does not alter the strong positive association between income and life expectancy or the distinctive role of inequality in Sub-Saharan Africa, increasing confidence in the stability of the findings.
+Although the global association between inequality and life expectancy is weak, region-specific models reveal important heterogeneity. Allowing the Gini index–life expectancy relationship to vary by region shows that Sub-Saharan Africa is the main exception, where higher inequality is clearly associated with shorter life expectancy even after controlling for GDP per capita and year. In other regions, the inequality effect is close to zero and often statistically indistinguishable from no relationship. Robustness checks indicate that these results are not driven by a small number of influential country-year observations: excluding such points does not alter the strong positive association between income and life expectancy or the distinctive role of inequality in Sub-Saharan Africa, increasing confidence in the stability of the findings.
 
 ## **2.2** Sustainability results**:**
 
@@ -265,7 +265,7 @@ rq2_data <- rq2_raw %>%
 
 ### 2.2.1 Descriptive patterns: inequality, GDP, and sustainability ratings
 
-We then focus on 269 country–year observations from low- and lower-middle-income countries with CPIA environmental sustainability ratings. Figure 4 shows simple bivariate relationships between the sustainability rating and our two main predictors. The left panel plots sustainability against the Gini index and shows a gentle upward slope: countries with higher inequality tend to have slightly higher sustainability ratings on average, although points are widely scattered. The right panel plots sustainability against log(GDP per capita) and shows a clearer upward trend, with higher-income countries more likely to have higher sustainability ratings.
+We then focus on 269 country–year observations from low- and lower-middle-income countries with CPIA sustainability ratings. Figure 4 shows simple bivariate relationships between the sustainability rating and our two main predictors. The left panel plots sustainability against the Gini index and shows a gentle upward slope: countries with higher inequality tend to have slightly higher sustainability ratings on average, although points are widely scattered. The right panel plots sustainability against log(GDP per capita) and shows a clearer upward trend, with higher-income countries more likely to have higher sustainability ratings.
 
 ```{r}
 library(gridExtra)
@@ -297,7 +297,7 @@ p_sust_gdp
 
 ```
 
-Figure 5 looks at the same relationships by sustainability category. The Gini boxplots show that median inequality increases slightly from lower to higher sustainability categories, but there is substantial overlap in the distributions. In other words, countries with similar sustainability ratings can have quite different levels of inequality. In contrast, the log(GDP) boxplots show a clearer separation across categories, with higher-rated countries consistently having higher median GDP per capita. This suggests that economic development is a stronger differentiator of sustainability performance than inequality.
+Figure 5 looks at the same relationships by sustainability category. The Gini index boxplots show that median inequality increases slightly from lower to higher sustainability categories, but there is substantial overlap in the distributions. In other words, countries with similar sustainability ratings can have quite different levels of inequality. In contrast, the log(GDP) boxplots show a clearer separation across categories, with higher-rated countries consistently having higher median GDP per capita. This suggests that economic development is a stronger differentiator of sustainability performance than inequality.
 
 ```{r}
 p_box_gini <- ggplot(rq2_data, aes(x = Sustainability_ord, y = Gini, fill = Sustainability_ord)) +
@@ -331,7 +331,7 @@ p_box_gdp
 
 ### 2.2.2 Ordinal logistic regression results
 
-We estimate an ordinal logistic regression with the CPIA environmental sustainability rating as the ordered outcome and the Gini index, log GDP per capita, and year fixed effects as predictors, which accounts for the ordered nature of the score and absorbs common shocks or changes in rating practices over time. The results (Table 2) show that both inequality and income are positively associated with higher sustainability ratings. The Gini coefficient is about 0.074, implying an odds ratio of roughly 1.08 per one-point increase and approximately a doubling of the odds of a higher rating for a 10-point increase in inequality. The log GDP coefficient is about 0.84, corresponding to an odds ratio of about 2.3, so a one-unit increase in log GDP per capita (roughly a 2.7-fold increase in income)is associated with more than double the odds of being in a higher sustainability category. Both associations are statistically significant.
+We estimate an ordinal logistic regression with the CPIA sustainability rating as the ordered outcome and the Gini index, log GDP per capita, and year fixed effects as predictors, which accounts for the ordered nature of the score and absorbs common shocks or changes in rating practices over time. The results (Table 2) show that both inequality and income are positively associated with higher sustainability ratings. The regression coefficient for Gini index is about 0.074, implying an odds ratio of roughly 1.08 per one-point increase and approximately a doubling of the odds of a higher rating for a 10-point increase in inequality. The regression coefficient for log GDP is about 0.84, corresponding to an odds ratio of about 2.3, so a one-unit increase in log GDP per capita (roughly a 2.7-fold increase in income)is associated with more than double the odds of being in a higher sustainability category. Both associations are statistically significant.
 
 ```{r}
 library(MASS)
@@ -380,23 +380,23 @@ ggplot(coef_data_sust, aes(x = Variable, y = Coefficient)) +
 
 ```
 
-Figure 6 compares the coefficients for Gini and log(GDP) on the log-odds scale. Both bars are clearly above zero, but the bar for log(GDP) is taller, reflecting its stronger association with sustainability ratings. This supports the idea that among low- and lower-middle-income countries, economic development is a more powerful predictor of environmental institutional strength than income distribution, even though inequality also has a positive association.
+Figure 6 compares the regression coefficients for Gini index and log(GDP) on the log-odds scale. Both bars are clearly above zero, but the bar for log(GDP) is taller, reflecting its larger affect with sustainability ratings. This supports the idea that among low- and lower-middle-income countries, economic development holds more weight in predicting institutional sustainability than income distribution, even though inequality also has a positive association.
 
-Year fixed effects are generally small and imprecise, and the likelihood ratio test shows that including Gini, log(GDP), and year jointly improves model fit over a model with only intercepts. McFadden’s pseudo-R² is modest (around 0.06), which is typical for institutional rating data and reflects the fact that sustainability outcomes depend on many unobserved country-specific factors. For our purposes, the key point is that the estimated associations for Gini and GDP are statistically robust and directionally clear.
+Year fixed effects are generally small and imprecise, and the likelihood ratio test shows that including Gini index, log(GDP), and year jointly improves model fit over a model with only intercepts. McFadden’s pseudo-R² is modest (around 0.06), which is typical for institutional rating data and reflects the fact that sustainability outcomes depend on many unobserved country-specific factors. For our purposes, the key point is that the estimated associations for Gini index and GDP are statistically robust and directionally clear.
 
 ### 2.2.3 Counterintuitive inequality effect
 
-The positive coefficient on the Gini index is counterintuitive, as higher inequality is often expected to be associated with weaker environmental institutions. Several factors may explain this result. CPIA ratings are observed only for IDA-eligible low- and lower-middle-income countries, within which higher inequality may coincide with greater urbanization, more diversified economies, or stronger administrative and statistical capacity that support environmental policy frameworks. In addition, both inequality and sustainability ratings may reflect deeper, unobserved structural characteristics such as governance quality, and CPIA scores themselves emphasize formal policies and institutions rather than distributional outcomes. The practical implication is that inequality alone is not a reliable screening indicator for environmental sustainability performance in this sample. GDP per capita shows a stronger and more consistent association with sustainability ratings, and the positive inequality effect should be interpreted cautiously and examined further rather than viewed as evidence that higher inequality improves environmental outcomes.
+The positive coefficient on the Gini index is counterintuitive, as higher inequality is often expected to be associated with less sustainable policies and institutions. Several factors may explain this result. CPIA ratings are observed only for IDA-eligible low- and lower-middle-income countries, within which higher inequality may coincide with greater urbanization, more diversified economies, or stronger administrative and statistical capacity that support environmental policy frameworks. In addition, both inequality and sustainability ratings may reflect deeper, unobserved structural characteristics such as governance quality, and CPIA scores themselves emphasize formal policies and institutions rather than distributional outcomes. The practical implication is that inequality alone is not a reliable screening indicator for environmental sustainability performance in this sample. GDP per capita shows a stronger and more consistent association with sustainability ratings, and the positive inequality effect should be interpreted cautiously and examined further rather than viewed as evidence that higher inequality improves environmental outcomes.
 
 ## 2.3 Integrated implications
 
-Taken together, the two analyses reveal a consistent pattern. Economic development, measured by log GDP per capita, is the dominant predictor of both outcomes. Higher income levels are strongly associated with longer life expectancy across all regions and with higher environmental sustainability ratings among low- and lower-middle-income countries. Income inequality plays a more limited and context-dependent role. Its association with life expectancy is generally weak and imprecise, except in Sub-Saharan Africa, where higher inequality is clearly linked to shorter lives. For environmental sustainability, the positive association with inequality is likely driven by sample restrictions, measurement issues, and unobserved institutional factors rather than a causal relationship.
+Taken together, the two analyses reveal a consistent pattern. Economic development, measured by log GDP per capita, is the dominant predictor of both outcomes. Higher income levels are strongly associated with longer life expectancy across all regions and with higher sustainability ratings among low- and lower-middle-income countries. Economic inequality plays a more limited and context-dependent role. Its association with life expectancy is generally weak and imprecise, except in Sub-Saharan Africa, where higher inequality is clearly linked to shorter life expectancies. For sustainability, the positive association with inequality is likely driven by sample restrictions, measurement issues, and unobserved institutional factors rather than a causal relationship.
 
-For a regional policy advisor, these results suggest several practical lessons. Policies that raise income levels remain the most reliable lever for improving population health and supporting environmental institutions. Inequality warrants targeted attention in specific contexts, particularly in Sub-Saharan Africa, but it should not be used in isolation as a proxy for environmental sustainability performance. More broadly, because both health and sustainability outcomes are shaped by complex and partially unobserved factors, cross-country statistical results should be complemented with country-specific institutional knowledge when setting priorities and designing interventions.
+For a regional policy advisor, these results suggest several practical lessons. Policies that raise economic productivity remain the most reliable lever for improving population health and supporting environmental institutions. Inequality warrants targeted attention in specific contexts, particularly in Sub-Saharan Africa, but it should not be used in isolation as a proxy for environmental sustainability performance. More broadly, because both health and sustainability outcomes are shaped by complex and partially unobserved factors, cross-country statistical results should be complemented with country-specific institutional knowledge when setting priorities and designing interventions.
 
 # **3. Methodology**
 
-Our analysis uses regression models as descriptive tools to examine how income inequality and economic development are associated with life expectancy and environmental sustainability. In each case, we control for observed factors such as year and region so that estimated coefficients can be interpreted as associations holding those factors constant, rather than as causal effects. The models are designed to provide policy-relevant summaries of how differences in income levels and income distribution tend to align with differences in outcomes across countries and over time.
+Our analysis uses regression models as descriptive tools to examine how economic inequality and economic development are associated with life expectancy and sustainability. In each case, we control for observed factors such as year and region so that estimated coefficients can be interpreted as associations holding those factors constant, rather than as causal effects. The models are designed to provide policy-relevant summaries of how differences in income levels and income distribution tend to align with differences in outcomes across countries and over time.
 
 ## 3.1 Models for life expectancy
 
@@ -404,23 +404,23 @@ To study life expectancy at birth, measured in years, we estimate linear regress
 
 ## 3.2 Models for sustainability ratings
 
-For environmental sustainability, the outcome variable is the CPIA environmental sustainability rating, which is an ordered categorical measure, so we estimate an ordinal logistic regression rather than a linear model. The predictors in this model are the Gini index, log GDP per capita, and year, and the coefficients describe how these variables shift the log odds of a country receiving a higher rather than a lower sustainability rating, holding other factors constant. Interpreting the exponentiated coefficients as odds ratios, a value greater than one indicates higher odds of being in a higher sustainability category; for example, an odds ratio of about 1.08 for the Gini index implies that a one-point increase in inequality is associated with an 8 percent increase in the odds of a higher rating, with larger changes implied for a 10-point increase. Year indicators absorb common global trends or changes in scoring standards, allowing the analysis to focus on how cross-country differences in income and inequality align with differences in environmental sustainability performance.
+For sustainability, the outcome variable is the CPIA environmental sustainability rating, which is an ordered categorical measure, so we estimate an ordinal logistic regression rather than a linear model. The CPIA sustainability rating is a measure developed as part of the Country Policy and Institutional Assessment (CPIA) as an indicator of a country's efforts via policies and institutions for sustainable development. This can include natural resources management, pollution, economic growth, and poverty reduction measures. The predictors in this model are the Gini index, log GDP per capita, and year, and the coefficients describe how these variables shift the log odds of a country receiving a higher rather than a lower sustainability rating, holding other factors constant. Interpreting the exponentiated coefficients as odds ratios, a value greater than one indicates higher odds of being in a higher sustainability category; for example, an odds ratio of about 1.08 for the Gini index implies that a one-point increase in inequality is associated with an 8 percent increase in the odds of a higher rating, with larger changes implied for a 10-point increase. Year indicators absorb common global trends or changes in scoring standards, allowing the analysis to focus on how cross-country differences in income and inequality align with differences in environmental sustainability performance.
 
 # **4. Recommended Next Steps**
 
-Based on our results and the limitations of the current data, we see four concrete next steps for the stakeholder.
+Based on our results and the limitations of the current data, we see three concrete next steps for the stakeholder.
 
-## **4.1.** Prioritize income growth as the most reliable lever
+## **4.1.** Prioritize societal economic growth as the most reliable lever
 
 Economic development is consistently associated with longer life expectancy and stronger environmental institutions, supporting continued focus on investments in basic infrastructure, primary health systems, water and sanitation, energy access, and productivity, alongside monitoring how growth translates into health and sustainability gains over time.
 
 ## **4.2.** Treat inequality as a targeted risk signal, not a universal trigger
 
-Inequality warrants focused attention in contexts such as Sub-Saharan Africa, where it is closely linked to poorer health outcomes, but it should not be used in isolation as a proxy for environmental sustainability or average health performance in other regions without supporting country-level evidence.
+Inequality warrants focused attention in contexts such as Sub-Saharan Africa, where it is closely linked to poorer health outcomes, but it should not be used in isolation as a proxy for sustainability or average health performance in other regions without supporting country-level evidence.
 
 ## **4.3.** Strengthen data and diagnostics before linking finance to scores
 
-Given measurement limitations in life expectancy, inequality, and CPIA sustainability ratings, financing decisions should be supported by improved statistical capacity, complementary objective indicators, richer covariates, and targeted country case work that combines global model signals with local institutional knowledge.
+Given measurement limitations in life expectancy, inequality, and CPIA sustainability ratings, financing decisions should be supported by improved statistical capacity, complementary objective indicators, richer covariates, and targeted country case work that combines global model signals with local institutional knowledge. Specifically, the dataset used for CPIA sustainability ratings was missing data for many countries, including but not limited to many higher-income countries, and the dataset used for Gini index was also missing data for a large portions of countries globally.
 
 # **Appendix A. Data**
 
@@ -429,17 +429,17 @@ Given measurement limitations in life expectancy, inequality, and CPIA sustainab
 This project builds two country–year panels from international data:
 
 1.  A health panel for Research Question 1, linking income inequality, economic development, and life expectancy at birth.
-2.  An environmental sustainability panel for Research Question 2, linking inequality, economic development, and CPIA environmental sustainability ratings.
+2.  A sustainability panel for Research Question 2, linking inequality, economic development, and CPIA sustainability ratings.
 
 All data are drawn from publicly available international sources:
 
--   Income inequality (Gini index): UN/World Bank inequality series, downloaded from UNdata (https://data.un.org).
+-   Economic inequality (Gini index): UN/World Bank inequality series, downloaded from UNdata (https://data.un.org/Data.aspx?q=gini&d=WDI&f=Indicator_Code%3aSI.POV.GINI).
 
--   GDP per capita (PPP, constant international dollars): World Bank World Development Indicators series NY.GDP.PCAP.PP.CD, accessed via UNdata (https://data.un.org/Data.aspx?d=WDI&f=Indicator_Code:NY.GDP.PCAP.PP.CD).
+-   GDP per capita (PPP, constant international dollars): World Bank World Development Indicators series NY.GDP.PCAP.PP.CD, accessed via UNdata (https://data.un.org/Data.aspx?q=gdp+per+capita&d=WDI&f=Indicator_Code%3aNY.GDP.PCAP.PP.CD).
 
--   Life expectancy at birth (years): UN life table data from UNdata, using the “Medium” variant.
+-   Life expectancy at birth (years): UN life table data from UNdata, using the “Medium” variant (https://data.un.org/Data.aspx?q=life+expectancy&d=PopDiv&f=variableID%3a68).
 
--   Environmental sustainability ratings: World Bank Country Policy and Institutional Assessment (CPIA), sustainability criterion, pre-processed into a country–year dataset.
+-   Sustainability ratings: World Bank Country Policy and Institutional Assessment (CPIA), sustainability criterion, pre-processed into a country–year dataset, taken from the UN website (https://data.un.org/Data.aspx?q=sustainability&d=WDI&f=Indicator_Code%3aIQ.CPA.ENVR.XQ).
 
 The Table below reads the raw (or pre-cleaned) files and reports the row counts for each source so that the scope of the input data is transparent
 
@@ -590,7 +590,7 @@ knitr::kable(
 
 ### **A.3.1 Cleaning and merging**
 
-For the sustainability panel, we construct a sustainability panel where each observation has a CPIA environmental sustainability rating, Gini, and GDP per capita for the same country and year. CPIA scores are only reported for IDA-eligible low and lower-middle-income countries, so the panel is restricted to that group from the outset.
+For the sustainability panel, we construct a sustainability panel where each observation has a CPIA sustainability rating, Gini, and GDP per capita for the same country and year. CPIA scores are only reported for IDA-eligible low and lower-middle-income countries, so the panel is restricted to that group from the outset.
 
 Cleaning decisions that affect the model:
 
@@ -812,7 +812,7 @@ knitr::kable(
 
 -   The coefficient on log_GDP is positive and highly significant. Higher GDP per capita is associated with higher life expectancy, holding inequality and year constant.
 
--   The coefficient on Gini is small and negative in this specification. Once we control for income level and year, higher inequality is weakly associated with lower life expectancy.
+-   The coefficient on Gini index is small and negative in this specification. Once we control for GDP per capita and year, higher inequality is weakly associated with lower life expectancy.
 
 ## **B.3 Region-interaction model**
 
@@ -865,7 +865,7 @@ knitr::kable(
 
 **Brief Interpretation**
 
--   The main Gini and log_GDP coefficients correspond to the reference region (for example, East Asia & Pacific).
+-   The main Gini index and log_GDP coefficients correspond to the reference region (for example, East Asia & Pacific).
 
 -   Interaction terms like *Gini:RegionSub-Saharan Africa* show how the inequality–life expectancy slope differs in that region compared to the reference.
 
@@ -932,13 +932,13 @@ if (length_influential > 0) {
 
 **Brief Interpretation**:
 
-Refitting the interaction model without these high-leverage points produced similar coefficients for Gini and log(GDP), so we retained the full-sample interaction model as the primary specification.
+Refitting the interaction model without these high-leverage points produced similar coefficients for Gini index and log(GDP), so we retained the full-sample interaction model as the primary specification.
 
 # **Appendix C. Models for Research Question 2**
 
 ## **C.1 Modelling approach and variables**
 
-The outcome for Research Question 2 is the CPIA environmental sustainability rating, which is:
+The outcome for Research Question 2 is the CPIA sustainability rating, which is:
 
 -   Ordered categories (2.0, 2.5, 3.0, 3.5, 4.0, 4.5)
 
@@ -948,7 +948,7 @@ Because of this, we use an **ordinal logistic regression (proportional odds mode
 
 **Main predictors:**
 
--   Gini: Gini index of income inequality
+-   Gini: Gini index, economic inequality
 
 -   log_GDP: natural log of GDP per capita (PPP, constant)
 
@@ -1024,7 +1024,7 @@ knitr::kable(
 
 **Brief Interpretation**Interpretation (brief):
 
--   The Gini odds ratio \> 1 implies that, within this sample of low and lower-middle-income countries, higher income inequality is associated with higher odds of being in a higher CPIA sustainability category.
+-   The Gini index odds ratio \> 1 implies that, within this sample of low and lower-middle-income countries, higher income inequality is associated with higher odds of being in a higher CPIA sustainability category.
 
 -   The log_GDP odds ratio \> 1 is larger in magnitude, indicating that economic development has a stronger association with sustainability ratings than inequality.
 
@@ -1116,7 +1116,7 @@ These plots support the idea that:
 
 -   Sustainability ratings increase with log(GDP) in a roughly monotonic way.
 
--   The relationship with Gini is weaker but still positive.
+-   The relationship with Gini index is weaker but still positive.
 
 We rely on the standard proportional odds assumption for interpretation, and there is no obvious violation in the ordered pattern of predicted probabilities across categories.
 
@@ -1128,13 +1128,13 @@ This project is well-structured with relatively sufficient data, but is still ma
 
 **1. Filling gaps in inequality data (Gini)**
 
--   The Gini series is reasonably broad, but there are still missing country–years, especially for low-income countries and earlier periods. This leads to dropping some observations when constructing the panels.
+-   The Gini index series is reasonably broad, but there are still missing country–years, especially for low-income countries and earlier periods. This leads to dropping some observations when constructing the panels.
 
--   **Next step:** supplement the current Gini series with other harmonized sources (for example SWIID or LIS) where available and test whether the main coefficients change when the panel becomes denser. This would mainly improve precision and robustness rather than fundamentally changing the modelling strategy.
+-   **Next step:** supplement the current Gini index series with other harmonized sources (for example SWIID or LIS) where available and test whether the main coefficients change when the panel becomes denser. This would mainly improve precision and robustness rather than fundamentally changing the modelling strategy.
 
 **2. Additional covariates as sensitivity checks**
 
--   The current models focus on the main story (inequality, income, and outcomes) plus time and region controls. Other plausible confounders (education, health spending, governance) are not included, mainly to keep the models interpretable.
+-   The current models focus on the main story (inequality, economic productivity, and outcomes) plus time and region controls. Other plausible confounders (education, health spending, governance) are not included, mainly to keep the models interpretable.
 
 -   **Next step:** run supplementary models that add a small set of extra controls where data are available. If results remain similar, this would strengthen confidence that the main findings are not driven by omitted-variable bias.
 
@@ -1146,13 +1146,13 @@ This project is well-structured with relatively sufficient data, but is still ma
 
 -   **Next step:** estimate a country fixed-effects or random-effects version of the life expectancy model as a robustness check. Comparing these estimates with the existing model would show whether within-country changes over time tell a similar story about inequality, income, and life expectancy, without replacing the current specification as the main result.
 
-**2. Exploring mild non-linearity in Gini and log(GDP)**
+**2. Exploring mild non-linearity in Gini index and log(GDP)**
 
 -   Using log(GDP) already improves linearity and residual patterns. There may still be gentle curvature, especially at very high or low levels of income or inequality.
 
--   **Next step:** add simple spline terms or quadratic terms for log(GDP) and/or Gini in secondary models. If these terms are small, we can report that the linear approximation is adequate; if they matter, we can describe the relationship as slightly non-linear while still keeping the interpretation straightforward.
+-   **Next step:** add simple spline terms or quadratic terms for log(GDP) and/or Gini index in secondary models. If these terms are small, we can report that the linear approximation is adequate; if they matter, we can describe the relationship as slightly non-linear while still keeping the interpretation straightforward.
 
-# **Reference**
+# **References**
 
 -   Deaton, A. (2003). Health, inequality, and economic development. *Journal of Economic Literature, 41*(1), 113–158.
 
